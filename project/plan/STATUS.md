@@ -7,5 +7,4 @@ that phase's body file, deleting the line and the file on completion.
 
 Next phase: 11
 
-- Phase 09 ⬜ realizes R-GZ15-6EPB R-H091-K6G0 — live provider smoke tests
 - Phase 10 ⬜ realizes R-HJRF-OIB4 R-HKZC-2A1T — release packaging
