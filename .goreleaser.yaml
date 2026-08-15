@@ -1,0 +1,23 @@
+version: 2
+
+project_name: llm-lint
+
+builds:
+  - main: ./cmd/llm-lint
+    binary: llm-lint
+    env: [CGO_ENABLED=0]
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    ldflags: ["-s -w -X main.version={{ .Tag }}"]
+
+archives:
+  - formats: [tar.gz]
+    name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+release:
+  github:
+    owner: ikigenba
+    name: llm-lint
