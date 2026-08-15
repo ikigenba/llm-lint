@@ -1,2 +1,9 @@
 project/loops/brief.md
 project/loops/blocked.md
+
+# Go build and test artifacts
+/llm-lint
+*.exe
+*.test
+*.out
+coverage.*
