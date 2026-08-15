@@ -36,13 +36,12 @@ func (s *stringList) Set(value string) error {
 	return nil
 }
 
-type cleanClient struct{}
-
-func (cleanClient) Judge(context.Context, rules.Rule, string, []byte) ([]engine.Finding, error) {
-	return nil, nil
+var newClient = func(cfg *config.Config, errOut io.Writer) (engine.Client, error) {
+	return &engine.AgentkitClient{
+		NewConversation: cfg.NewConversation,
+		Warn:            errOut,
+	}, nil
 }
-
-var newClient = func(*config.Config, io.Writer) (engine.Client, error) { return cleanClient{}, nil }
 
 func usage(w io.Writer) {
 	fmt.Fprintln(w, "Usage: llm-lint [options] [path...]")
@@ -169,16 +168,14 @@ func run(args []string, in io.Reader, out, errOut io.Writer, getenv func(string)
 		fmt.Fprintf(errOut, "llm-lint: %v\n", err)
 		return 3
 	}
-	if len(findings) > 0 {
-		if format == "json" {
-			err = report.JSON(out, findings)
-		} else {
-			err = report.Text(out, cwd, cfg.Root, findings)
-		}
-		if err != nil {
-			fmt.Fprintf(errOut, "llm-lint: %v\n", err)
-			return 3
-		}
+	if format == "json" {
+		err = report.JSON(out, findings)
+	} else if len(findings) > 0 {
+		err = report.Text(out, cwd, cfg.Root, findings)
+	}
+	if err != nil {
+		fmt.Fprintf(errOut, "llm-lint: %v\n", err)
+		return 3
 	}
 	if statsFlag {
 		report.StatsLine(errOut, report.Stats{Rules: engineStats.Rules, Files: engineStats.Files, Pairs: engineStats.Pairs, Calls: engineStats.Calls, CacheHits: int(hits.Load()), InputTokens: engineStats.InputTokens, OutputTokens: engineStats.OutputTokens, CostUSD: engineStats.CostUSD})
