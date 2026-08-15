@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"sync/atomic"
 
@@ -133,7 +135,7 @@ func run(args []string, in io.Reader, out, errOut io.Writer, getenv func(string)
 	if len(paths) == 0 {
 		paths = []string{"."}
 	}
-	walker := &walk.Walker{Root: cfg.Root, Exclude: cfg.Exclude}
+	walker := &walk.Walker{Root: cfg.Root, Exclude: cfg.Exclude, RunGit: runGit}
 	files, err := walker.Files(paths)
 	if err != nil {
 		fmt.Fprintf(errOut, "llm-lint: %v\n", err)
@@ -151,12 +153,18 @@ func run(args []string, in io.Reader, out, errOut io.Writer, getenv func(string)
 	var hits atomic.Int64
 	client = &cache.CachingClient{Store: &cache.Store{}, Next: client, NoRead: noCache, Hits: &hits}
 	runner := &engine.Engine{Client: client, Concurrency: concurrency}
-	findings, engineStats, err := runner.Run(context.Background(), selected, byRule, os.ReadFile, errOut)
+	readFile := func(name string) ([]byte, error) {
+		if !filepath.IsAbs(name) {
+			name = filepath.Join(cfg.Root, filepath.FromSlash(name))
+		}
+		return os.ReadFile(name)
+	}
+	findings, engineStats, err := runner.Run(context.Background(), selected, byRule, readFile, errOut)
 	if err != nil {
 		fmt.Fprintf(errOut, "llm-lint: %v\n", err)
 		return 3
 	}
-	findings, err = suppress.Filter(findings, os.ReadFile)
+	findings, err = suppress.Filter(findings, readFile)
 	if err != nil {
 		fmt.Fprintf(errOut, "llm-lint: %v\n", err)
 		return 3
@@ -176,4 +184,10 @@ func run(args []string, in io.Reader, out, errOut io.Writer, getenv func(string)
 		report.StatsLine(errOut, report.Stats{Rules: engineStats.Rules, Files: engineStats.Files, Pairs: engineStats.Pairs, Calls: engineStats.Calls, CacheHits: int(hits.Load()), InputTokens: engineStats.InputTokens, OutputTokens: engineStats.OutputTokens, CostUSD: engineStats.CostUSD})
 	}
 	return report.ExitCode(findings)
+}
+
+func runGit(dir string, args ...string) ([]byte, error) {
+	cmd := exec.Command("git", args...)
+	cmd.Dir = dir
+	return cmd.Output()
 }
