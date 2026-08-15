@@ -11,7 +11,7 @@ import (
 
 // R-FTKK-67HP
 func TestRunWarningFindingPrintsAndReturnsZero(t *testing.T) {
-	bindClient(t, &fakeClient{findings: []engine.Finding{{Rule: "clarity", Severity: rules.SeverityWarning, File: "sample.txt", Line: 1, Explanation: "consider revising"}}})
+	bindClient(t, &fakeClient{findings: []engine.Finding{{Rule: "clarity", Severity: rules.SeverityWarning, File: "sample_test.go", Line: 1, Explanation: "consider revising"}}})
 	var out, errOut bytes.Buffer
 	code := run(nil, bytes.NewReader(nil), &out, &errOut, noEnv, lintTree(t))
 	if code != 0 || !strings.Contains(out.String(), "consider revising") {
