@@ -39,8 +39,9 @@ works like the linters developers already know.
 llm-lint lints files against prompt-defined rules and reports findings; it
 does nothing else. It ships a built-in rule catalog (starting with a single
 rule: sleeps in tests papering over timing issues) and runs project-supplied
-rule files alongside it. No rule is active unless the project opts into it.
-It never modifies the code it lints, never manages adjudication or override
+rule files alongside it. Every rule available to a run is active by default; a
+project narrows the run to a chosen subset or silences individual rules by name
+in its config. It never modifies the code it lints, never manages adjudication or override
 state beyond honoring inline suppression comments, and never runs as a daemon
 or editor service — it is a batch CLI. Judgment quality is bounded by the
 configured model; the tool's job is to make running that judgment cheap,
@@ -67,9 +68,11 @@ repeatable, and conventional, not to guarantee a perfect verdict.
   distinguishable, and a broken tool (no credentials, provider outage) is
   distinguishable from a failing lint, so an outage never reads as either a
   pass or a code defect.
-- Rules are opted into per project in `.llm-lint.json`; nothing is on by
-  default. Projects add their own rules as committed prompt files that behave
-  identically to built-in ones, and can list every rule available to them.
+- Every built-in rule runs by default; a project can restrict a run to a
+  chosen subset of rules or silence individual rules by name in
+  `.llm-lint.json`. Projects add their own rules as committed prompt files that
+  behave identically to built-in ones and run alongside them, and can list
+  every rule available to a run and see which are active.
 - A finding judged acceptable is silenced by an ordinary inline comment
   (`llm-lint:ignore`), committed next to the code, exactly like other linters'
   suppression comments — this is also how build loops override a false
@@ -88,13 +91,15 @@ repeatable, and conventional, not to guarantee a perfect verdict.
 
 ## Success criteria (outcomes)
 
-- A project with an obvious sleep-to-dodge-a-race in a test, the built-in rule
-  enabled, and a valid API key gets that sleep flagged with the right file and
-  line by a real model run.
+- A project with an obvious sleep-to-dodge-a-race in a test and a valid API
+  key gets that sleep flagged with the right file and line by a real model run.
+- With no configuration every built-in rule is active; a project can restrict a
+  run to a chosen subset or disable a rule by name, and see the result in the
+  rule listing.
 - A clean project produces no output and CI treats the run as a success;
   introducing a violation flips the same CI job to failure; removing the API
   key produces a tool-failure outcome CI can tell apart from both.
-- A project-authored rule file, opted in via config, produces findings with
+- A project-authored rule file, once configured, produces findings with
   the same output, suppression, and caching behavior as the built-in rule.
 - Adding an inline `llm-lint:ignore` comment to a flagged line makes the
   finding disappear from the next run without changing anything else.

@@ -7,13 +7,14 @@ whenever a Decision is added or its Verification ids change.
 ## Decisions
 
 - D1 → `D01.md` — CLI surface and shallow composition root — R-FR4R-EO0B,
-  R-FSCN-SFR0, R-FTKK-67HP, R-FUSG-JZ8E, R-FW0C-XQZ3, R-FX89-BIPS,
-  R-FYG5-PAGH
+  R-FSCN-SFR0, R-FTKK-67HP, R-FUSG-JZ8E, R-FW0C-XQZ3, R-2J16-KM75,
+  R-FX89-BIPS, R-FYG5-PAGH
 - D2 → `D02.md` — Configuration resolution — R-FZO2-3276, R-G0VY-GTXV,
-  R-G23U-ULOK, R-G3BR-8DF9, R-G5RJ-ZWWN, R-G6ZG-DONC, R-G87C-RGE1,
-  R-G9F9-584Q
+  R-2K92-YDXU, R-G23U-ULOK, R-G3BR-8DF9, R-G5RJ-ZWWN, R-G6ZG-DONC,
+  R-G87C-RGE1, R-G9F9-584Q
 - D3 → `D03.md` — Rule model and catalog — R-GAN5-IZVF, R-GBV1-WRM4,
-  R-GD2Y-AJCT, R-GEAU-OB3I, R-GFIR-22U7, R-GGQN-FUKW, R-GHYJ-TMBL
+  R-GD2Y-AJCT, R-2LGZ-C5OJ, R-2MOV-PXF8, R-2NWS-3P5X, R-GEAU-OB3I,
+  R-GFIR-22U7, R-GGQN-FUKW, R-2P4O-HGWM
 - D4 → `D04.md` — Candidate file walking — R-GJ6G-7E2A, R-GKEC-L5SZ,
   R-GLM8-YXJO, R-GO21-QH12, R-GP9Y-48RR, R-GQHU-I0IG
 - D5 → `D05.md` — Inference engine — R-GRPQ-VS95, R-GSXN-9JZU, R-GU5J-NBQJ,
@@ -29,6 +30,12 @@ whenever a Decision is added or its Verification ids change.
 
 ## Verification ids → Decision
 
+- R-2J16-KM75 — D1 (`D01.md`)
+- R-2K92-YDXU — D2 (`D02.md`)
+- R-2LGZ-C5OJ — D3 (`D03.md`)
+- R-2MOV-PXF8 — D3 (`D03.md`)
+- R-2NWS-3P5X — D3 (`D03.md`)
+- R-2P4O-HGWM — D3 (`D03.md`)
 - R-FR4R-EO0B — D1 (`D01.md`)
 - R-FSCN-SFR0 — D1 (`D01.md`)
 - R-FTKK-67HP — D1 (`D01.md`)
@@ -50,7 +57,6 @@ whenever a Decision is added or its Verification ids change.
 - R-GEAU-OB3I — D3 (`D03.md`)
 - R-GFIR-22U7 — D3 (`D03.md`)
 - R-GGQN-FUKW — D3 (`D03.md`)
-- R-GHYJ-TMBL — D3 (`D03.md`)
 - R-GJ6G-7E2A — D4 (`D04.md`)
 - R-GKEC-L5SZ — D4 (`D04.md`)
 - R-GLM8-YXJO — D4 (`D04.md`)
@@ -86,11 +92,14 @@ whenever a Decision is added or its Verification ids change.
 
 - "A project with an obvious sleep-to-dodge-a-race … gets that sleep flagged
   … by a real model run" → R-GZ15-6EPB, R-H091-K6G0
+- "With no configuration every built-in rule is active; a project can restrict
+  a run to a chosen subset or disable a rule by name, and see the result in the
+  rule listing" → R-FX89-BIPS
 - "A clean project produces no output and CI treats the run as a success;
   introducing a violation flips the same CI job to failure; removing the API
   key produces a tool-failure outcome CI can tell apart from both" →
   R-FR4R-EO0B, R-FSCN-SFR0, R-G87C-RGE1, R-FYG5-PAGH
-- "A project-authored rule file, opted in via config, produces findings with
+- "A project-authored rule file, once configured, produces findings with
   the same output, suppression, and caching behavior as the built-in rule" →
   R-GEAU-OB3I, R-GD2Y-AJCT
 - "Adding an inline `llm-lint:ignore` comment to a flagged line makes the
