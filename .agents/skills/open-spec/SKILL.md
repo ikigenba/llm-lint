@@ -1,0 +1,52 @@
+---
+name: open-spec
+description: Open a spec-authoring session over the project/ workspace. Use when the user says open-spec, $open-spec, or "open the spec" — it scopes the session to project/*, loads the spec contracts, and shifts into discussing desired outcomes before any spec is written.
+---
+First use the project-local `$ikispec` skill if it is not already in
+context. It is the single source of truth for the `project/` shapes and hard
+invariants this session operates under.
+
+# Open Spec
+
+**Opening the spec starts a spec-authoring session.** From this point until the
+session is sealed, the work is *talking about* what the project should become —
+not building it, and not yet writing it down.
+
+An open session means:
+
+- **Scope is `project/*`.** The session governs the codebase this `project/`
+  sits at the root of, and any writes it eventually produces land only under
+  `project/` — per `ikispec`'s scope and authoring-write boundaries. No
+  implementation, build, or test files are created, edited, scaffolded, or
+  committed while the session is open, and direct implementation is not
+  offered as a next step.
+- **The operator describes desired outcomes.** Listen, ask what's needed to
+  follow, and hold the goal at outcome altitude. Failure is part of the
+  outcome: what the operator wants to happen when things go wrong belongs in
+  the discussion at the same altitude as success. Track what's settled and
+  what's still open, but do not start writing spec documents — discussion is
+  not authoring.
+- **Every existing Decision is open.** An extension session inherits a
+  `project/` full of prior choices; none of them are settled while authoring.
+  Read them as input: what was chosen, and the reasoning that produced it.
+  Never treat one as a closed door, and never answer the operator by saying a
+  path is unavailable because the spec already decided otherwise. If a prior
+  Decision or Rejected entry still holds, re-argue it on its merits here and
+  say so; if the goal on the table breaks it, that is a Decision to rewrite,
+  not an objection to raise. The gate is on writing `project/`, not on
+  reconsidering it (see `ikispec`, *Sealed governs writes, not questions*).
+- **The session has two named exits.** `$grill-me` interrogates the goal one
+  question at a time until every unknown is resolved; `$seal-spec` writes the
+  settled goal into `project/` (product, research, design, plan) in one
+  automated pass and leaves the workspace ready for the next `ralph` run. The
+  usual arc is **open-spec → grill-me → seal-spec**, but the operator drives:
+  wait to be told which move comes next.
+
+When the session opens, confirm briefly that the spec is open and scoped to
+`project/*`, note whether `project/` already exists (greenfield or extension),
+and **check the findings tray**: list `project/issues/` in this tree (and the
+root umbrella's, when opening a subproject) and surface any unresolved issues
+before the discussion starts, asking whether any belong in this session's
+scope. An issue the session absorbs is deleted by the move that specs its fix
+(`ikispec`: resolution is deletion); one it does not touch stays filed. Then
+let the operator talk.
