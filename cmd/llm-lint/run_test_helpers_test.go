@@ -25,6 +25,7 @@ func (f *fakeClient) Judge(context.Context, rules.Rule, string, []byte) ([]engin
 
 func bindClient(t *testing.T, client engine.Client) {
 	t.Helper()
+	t.Setenv("XDG_CACHE_HOME", t.TempDir())
 	old := newClient
 	newClient = func(*config.Config, io.Writer) (engine.Client, error) { return client, nil }
 	t.Cleanup(func() { newClient = old })
