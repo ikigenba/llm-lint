@@ -6,5 +6,3 @@ status markers. The build loop finds its next work with
 that phase's body file, deleting the line and the file on completion.
 
 Next phase: 11
-
-- Phase 10 ⬜ realizes R-HJRF-OIB4 R-HKZC-2A1T — release packaging
