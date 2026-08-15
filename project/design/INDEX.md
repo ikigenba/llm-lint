@@ -27,6 +27,7 @@ whenever a Decision is added or its Verification ids change.
   R-HEVU-5FCC, R-HG3Q-J731, R-HHBM-WYTQ
 - D9 → `D09.md` — Built-in rule: no-sleep-in-tests — R-HIJJ-AQKF
 - D10 → `D10.md` — Release and installation — R-HJRF-OIB4, R-HKZC-2A1T
+- D11 → `D11.md` — Self-lint gate (dogfooding) — none — structural
 
 ## Verification ids → Decision
 

@@ -9,6 +9,14 @@
   `project/`), `go vet ./...` is clean, and `go test ./...` exits 0. Live
   integration tests `t.Skip` when their provider env key is absent, so green
   does not require credentials.
+- **Self-lint gate** (D11): beyond the suite, the build loop's verify turn runs
+  the installed `llm-lint` binary over the tree and requires zero findings. It
+  calls a model, so this gate runs **only when a provider API key is present**
+  in the environment and is **skipped otherwise** — exactly like the live
+  integration tests, so credential-free green is unchanged. The repo ships a
+  root `.llm-lint.json` (`enable: ["no-sleep-in-tests"]`, `exclude:
+  ["testdata/**"]`) so the gate lints real project code and never the
+  deliberately anti-pattern fixtures under `testdata/`.
 - **Test-file glob**: `*_test.go`. Requirement-id tags appear verbatim in test
   files, in a comment on (or subtest name of) the test that discharges them.
 - **Dependencies**: `github.com/ikigenba/agentkit` (client, catalog,
