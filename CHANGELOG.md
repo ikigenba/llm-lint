@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.4.0
+
+- Changed `--verbose` to stream its per-file, per-rule audit trace to stderr
+  live as the run proceeds: each line now appears the moment that pair is
+  judged, in the order verdicts complete, so progress is visible while the run
+  is still going and a run that aborts still shows the work it finished. It
+  previously buffered every line and printed them sorted only after the run
+  completed.
+
 ## v0.3.0
 
 - Added a `--verbose` option that prints, for every examined file and enabled
