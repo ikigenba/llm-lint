@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,15 +17,33 @@ func TestRunLiveSubscriptionReportsSleepPastRace(t *testing.T) {
 	if err != nil {
 		t.Skipf("cannot locate the default subscription token: %v", err)
 	}
-	tokenFile := filepath.Join(home, ".llm-lint", "openai-auth.json")
-	if _, err := os.Stat(tokenFile); err != nil {
-		t.Skipf("default OpenAI subscription token is unavailable: %v", err)
-	}
 
 	cwd := filepath.Join("..", "..", "testdata", "live-smoke")
-	pairs := []string{"provider=openai", "model=gpt-5.6-luna", "auth=sub"}
-	if _, err := config.Load(cwd, pairs, os.Getenv); err != nil {
-		t.Skipf("default OpenAI subscription token does not load: %v", err)
+	candidates := []struct {
+		provider string
+		model    string
+	}{
+		{provider: "openai", model: "gpt-5.6-luna"},
+		{provider: "x-ai", model: "grok-4.3"},
+	}
+	var pairs []string
+	var unavailable []string
+	for _, candidate := range candidates {
+		tokenFile := filepath.Join(home, ".llm-lint", candidate.provider+"-auth.json")
+		if _, err := os.Stat(tokenFile); err != nil {
+			unavailable = append(unavailable, fmt.Sprintf("%s: %v", candidate.provider, err))
+			continue
+		}
+		candidatePairs := []string{"provider=" + candidate.provider, "model=" + candidate.model, "auth=sub"}
+		if _, err := config.Load(cwd, candidatePairs, os.Getenv); err != nil {
+			unavailable = append(unavailable, fmt.Sprintf("%s: %v", candidate.provider, err))
+			continue
+		}
+		pairs = candidatePairs
+		break
+	}
+	if pairs == nil {
+		t.Skipf("no default subscription token is available and loadable: %s", strings.Join(unavailable, "; "))
 	}
 
 	var out, errOut bytes.Buffer
