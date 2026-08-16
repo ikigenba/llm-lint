@@ -15,9 +15,10 @@
   calls a model, so this gate runs **only when a provider API key is present**
   in the environment and is **skipped otherwise** — exactly like the live
   integration tests, so credential-free green is unchanged. The repo ships a
-  root `.llm-lint.json` (`enable: ["no-sleep-in-tests"]`, `exclude:
-  ["testdata/**"]`) so the gate lints real project code and never the
-  deliberately anti-pattern fixtures under `testdata/`.
+  root `.llm-lint.json` (`exclude: ["testdata/**"]`, no `enable` key, so the
+  whole catalog is active) so the gate lints real project code with every
+  built-in rule and never the deliberately anti-pattern fixtures under
+  `testdata/`.
 - **Test-file glob**: `*_test.go`. Requirement-id tags appear verbatim in test
   files, in a comment on (or subtest name of) the test that discharges them.
 - **Dependencies**: `github.com/ikigenba/agentkit` (client, catalog,

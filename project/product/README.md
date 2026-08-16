@@ -103,8 +103,8 @@ repeatable, and conventional, not to guarantee a perfect verdict.
 - On request, a run streams a per-file, per-rule account of its work as it
   happens: as each enabled rule finishes judging each examined file, a line
   leads with a green or red circle for whether the rule passed or flagged the
-  file, followed by the file path and the rule, so progress is visible while the
-  run is still going, in the order verdicts land. This progress view is kept
+  file, followed by the rule and then the file path, so progress is visible
+  while the run is still going, in the order verdicts land. This progress view is kept
   separate from the findings, so it never disturbs the output tooling consumes.
 - It installs the way its siblings do: a released binary fetched by a shell
   installer, runnable on Linux and macOS.
@@ -136,5 +136,5 @@ repeatable, and conventional, not to guarantee a perfect verdict.
   without code changes.
 - Running with the verbose option streams, as each examined file and enabled
   rule is judged, a green or red circle for whether the rule passed or flagged
-  the file, followed by the file path and the rule — each line appearing while
-  the run is still in progress — without altering the findings output.
+  the file, followed by the rule and then the file path — each line appearing
+  while the run is still in progress — without altering the findings output.

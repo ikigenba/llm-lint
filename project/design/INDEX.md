@@ -30,7 +30,8 @@ whenever a Decision is added or its Verification ids change.
 - D9 → `D09.md` — Built-in rule: no-sleep-in-tests — R-HIJJ-AQKF
 - D10 → `D10.md` — Release and installation — R-HJRF-OIB4, R-HKZC-2A1T
 - D11 → `D11.md` — Self-lint gate (dogfooding) — none — structural
-- D12 → `D12.md` — Built-in rule: boolean-state-machine — R-4IQ0-3CA4
+- D12 → `D12.md` — Built-in rule: boolean-state-machine — R-4IQ0-3CA4,
+  R-4JXW-H40T
 
 ## Verification ids → Decision
 
@@ -42,6 +43,7 @@ whenever a Decision is added or its Verification ids change.
 - R-2P4O-HGWM — D3 (`D03.md`)
 - R-4HI3-PKJF — D3 (`D03.md`)
 - R-4IQ0-3CA4 — D12 (`D12.md`)
+- R-4JXW-H40T — D12 (`D12.md`)
 - R-ETNZ-VY1Q — D5 (`D05.md`)
 - R-FR4R-EO0B — D1 (`D01.md`)
 - R-FSCN-SFR0 — D1 (`D01.md`)
@@ -140,5 +142,5 @@ whenever a Decision is added or its Verification ids change.
   R-H091-K6G0, R-J81P-S6MN
 - "Running with the verbose option prints, for every examined file and enabled
   rule, a green or red circle for whether the rule passed or flagged the file,
-  followed by the file path and the rule, without altering the findings output"
-  → R-H1KL-BCFY, R-H2SH-P46N
+  followed by the rule and then the file path, without altering the findings
+  output" → R-H1KL-BCFY, R-H2SH-P46N
