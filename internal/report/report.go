@@ -6,6 +6,7 @@ import (
 	"io"
 	"path/filepath"
 	"sort"
+	"sync"
 
 	"github.com/ikigenba/llm-lint/internal/engine"
 	"github.com/ikigenba/llm-lint/internal/rules"
@@ -65,29 +66,32 @@ func StatsLine(w io.Writer, s Stats) {
 	fmt.Fprintf(w, "llm-lint: %d rules, %d files, %d pairs, %d calls, %d cache hits, %s in / %s out tokens, $%.4f\n", s.Rules, s.Files, s.Pairs, s.Calls, s.CacheHits, tokenCount(s.InputTokens), tokenCount(s.OutputTokens), s.CostUSD)
 }
 
-func Verbose(w io.Writer, cwd, root string, entries []engine.TraceEntry) {
-	ordered := append([]engine.TraceEntry(nil), entries...)
-	sort.SliceStable(ordered, func(i, j int) bool {
-		if ordered[i].File != ordered[j].File {
-			return ordered[i].File < ordered[j].File
-		}
-		return ordered[i].Rule < ordered[j].Rule
-	})
-	for _, entry := range ordered {
-		name := entry.File
-		path := entry.File
-		if !filepath.IsAbs(path) {
-			path = filepath.Join(root, filepath.FromSlash(path))
-		}
-		if rel, err := filepath.Rel(cwd, path); err == nil {
-			name = rel
-		}
-		cacheStatus := "miss"
-		if entry.Cached {
-			cacheStatus = "hit"
-		}
-		fmt.Fprintf(w, "%s: %s %s %s\n", name, entry.Rule, cacheStatus, entry.Outcome)
+type VerboseSink struct {
+	w         io.Writer
+	cwd, root string
+	mu        sync.Mutex
+}
+
+func NewVerboseSink(w io.Writer, cwd, root string) *VerboseSink {
+	return &VerboseSink{w: w, cwd: cwd, root: root}
+}
+
+func (s *VerboseSink) Add(entry engine.TraceEntry) {
+	name := entry.File
+	path := entry.File
+	if !filepath.IsAbs(path) {
+		path = filepath.Join(s.root, filepath.FromSlash(path))
 	}
+	if rel, err := filepath.Rel(s.cwd, path); err == nil {
+		name = rel
+	}
+	cacheStatus := "miss"
+	if entry.Cached {
+		cacheStatus = "hit"
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	_, _ = fmt.Fprintf(s.w, "%s: %s %s %s\n", name, entry.Rule, cacheStatus, entry.Outcome)
 }
 
 func sorted(findings []engine.Finding) []engine.Finding {

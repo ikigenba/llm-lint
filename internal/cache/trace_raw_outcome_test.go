@@ -14,7 +14,7 @@ func TestTraceRecordsRawVerdictOutcome(t *testing.T) {
 	// R-H6G6-UFEQ
 	rule := testRule("target-rule", "find target")
 	finding := engine.Finding{Rule: rule.ID, Severity: rules.SeverityError, File: "ignored.go", Line: 1}
-	trace := &engine.Trace{}
+	trace := &traceSink{}
 	failing := &CachingClient{Store: &Store{Dir: t.TempDir()}, Next: &fakeClient{findings: []engine.Finding{finding}}, Trace: trace}
 	got, _, err := failing.Judge(context.Background(), rule, finding.File, []byte("work() // llm-lint:ignore target-rule\n"))
 	if err != nil {

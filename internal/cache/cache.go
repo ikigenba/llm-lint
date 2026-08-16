@@ -29,7 +29,7 @@ type CachingClient struct {
 	Next   engine.Client
 	NoRead bool
 	Hits   *atomic.Int64
-	Trace  *engine.Trace
+	Trace  engine.TraceSink
 
 	pruneOnce sync.Once
 	warnOnce  sync.Once
@@ -93,6 +93,9 @@ func (c *CachingClient) judgeNext(ctx context.Context, r rules.Rule, file string
 }
 
 func (c *CachingClient) record(file, rule string, findings []engine.Finding, cached bool) {
+	if c.Trace == nil {
+		return
+	}
 	outcome := "pass"
 	if len(findings) > 0 {
 		outcome = "fail"

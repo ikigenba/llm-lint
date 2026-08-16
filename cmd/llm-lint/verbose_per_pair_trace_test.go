@@ -5,6 +5,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"testing"
@@ -14,12 +15,13 @@ import (
 )
 
 type perPairClient struct {
-	mu sync.Mutex
+	blockBeta <-chan struct{}
 }
 
 func (c *perPairClient) Judge(_ context.Context, rule rules.Rule, file string, _ []byte) ([]engine.Finding, engine.Usage, error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	if c.blockBeta != nil && strings.Contains(file, "beta_test.go") {
+		<-c.blockBeta
+	}
 	if rule.ID != "no-sleep-in-tests" {
 		return nil, engine.Usage{}, nil
 	}
@@ -30,8 +32,8 @@ func verboseLintTree(t *testing.T) (string, string) {
 	t.Helper()
 	root := t.TempDir()
 	for name, content := range map[string]string{
-		"alpha_test.go": "alpha\n",
-		"beta_test.go":  "beta\n",
+		"alpha_test.go": "alpha " + root + "\n",
+		"beta_test.go":  "beta " + root + "\n",
 	} {
 		if err := os.WriteFile(filepath.Join(root, name), []byte(content), 0o600); err != nil {
 			t.Fatal(err)
@@ -45,12 +47,52 @@ func verboseLintTree(t *testing.T) (string, string) {
 	return root, rulePath
 }
 
+type lineCapture struct {
+	mu     sync.Mutex
+	buf    bytes.Buffer
+	writes chan struct{}
+}
+
+func (w *lineCapture) Write(p []byte) (int, error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	n, err := w.buf.Write(p)
+	select {
+	case w.writes <- struct{}{}:
+	default:
+	}
+	return n, err
+}
+
+func (w *lineCapture) String() string {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return w.buf.String()
+}
+
 func TestRunVerboseWritesPerPairTraceOnlyToStderr(t *testing.T) {
 	// R-H1KL-BCFY
-	bindClient(t, &perPairClient{})
 	root, rulePath := verboseLintTree(t)
-	var out, errOut bytes.Buffer
-	code := run([]string{"--verbose", "--rules", rulePath}, bytes.NewReader(nil), &out, &errOut, noEnv, root)
+	release := make(chan struct{})
+	bindClient(t, &perPairClient{blockBeta: release})
+	var out bytes.Buffer
+	errOut := &lineCapture{writes: make(chan struct{}, 8)}
+	done := make(chan int, 1)
+	go func() {
+		done <- run([]string{"--verbose", "--concurrency", "4", "--rules", rulePath}, bytes.NewReader(nil), &out, errOut, noEnv, root)
+	}()
+	select {
+	case <-errOut.writes:
+		select {
+		case code := <-done:
+			t.Fatalf("run() completed with code %d before blocked pairs were released", code)
+		default:
+		}
+	case code := <-done:
+		t.Fatalf("run() completed with code %d before streaming a trace line", code)
+	}
+	close(release)
+	code := <-done
 	if code != 1 {
 		t.Fatalf("run() code = %d, stderr = %q", code, errOut.String())
 	}
@@ -60,20 +102,24 @@ func TestRunVerboseWritesPerPairTraceOnlyToStderr(t *testing.T) {
 		"beta_test.go: extra-audit miss pass",
 		"beta_test.go: no-sleep-in-tests miss fail",
 	}
-	if got := strings.Split(strings.TrimSpace(errOut.String()), "\n"); !equalStrings(got, wantTrace) {
-		t.Fatalf("verbose stderr = %#v, want %#v", got, wantTrace)
+	gotTrace := strings.Split(strings.TrimSpace(errOut.String()), "\n")
+	sort.Strings(gotTrace)
+	sort.Strings(wantTrace)
+	if !equalStrings(gotTrace, wantTrace) {
+		t.Fatalf("verbose stderr = %#v, want %#v", gotTrace, wantTrace)
 	}
 	if strings.Count(out.String(), "found issue") != 2 || strings.Contains(out.String(), " miss ") {
 		t.Fatalf("findings stdout = %q; want two findings and no trace", out.String())
 	}
 
-	out.Reset()
-	errOut.Reset()
-	if code := run([]string{"--no-cache", "--rules", rulePath}, bytes.NewReader(nil), &out, &errOut, noEnv, root); code != 1 {
-		t.Fatalf("non-verbose run() code = %d, stderr = %q", code, errOut.String())
+	verboseOut := out.String()
+	var plainOut, plainErr bytes.Buffer
+	bindClient(t, &perPairClient{})
+	if code := run([]string{"--no-cache", "--concurrency", "4", "--rules", rulePath}, bytes.NewReader(nil), &plainOut, &plainErr, noEnv, root); code != 1 {
+		t.Fatalf("non-verbose run() code = %d, stderr = %q", code, plainErr.String())
 	}
-	if errOut.Len() != 0 {
-		t.Fatalf("non-verbose stderr = %q, want no audit trace", errOut.String())
+	if plainErr.Len() != 0 || plainOut.String() != verboseOut {
+		t.Fatalf("non-verbose stdout/stderr = %q/%q, want unchanged stdout %q and no audit trace", plainOut.String(), plainErr.String(), verboseOut)
 	}
 }
 

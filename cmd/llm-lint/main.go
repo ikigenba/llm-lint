@@ -232,12 +232,12 @@ func run(args []string, in io.Reader, out, errOut io.Writer, getenv func(string)
 		return 3
 	}
 	var hits atomic.Int64
-	var trace *engine.Trace
+	var trace engine.TraceSink
 	if verbose {
-		trace = &engine.Trace{}
+		trace = report.NewVerboseSink(errOut, cwd, cfg.Root)
 	}
 	client = &cache.CachingClient{Store: &cache.Store{}, Next: client, NoRead: noCache, Hits: &hits, Trace: trace}
-	runner := &engine.Engine{Client: client, Concurrency: concurrency, Trace: trace}
+	runner := &engine.Engine{Client: client, Concurrency: concurrency}
 	readFile := func(name string) ([]byte, error) {
 		if !filepath.IsAbs(name) {
 			name = filepath.Join(cfg.Root, filepath.FromSlash(name))
@@ -262,9 +262,6 @@ func run(args []string, in io.Reader, out, errOut io.Writer, getenv func(string)
 	if err != nil {
 		fmt.Fprintf(errOut, "llm-lint: %v\n", err)
 		return 3
-	}
-	if verbose {
-		report.Verbose(errOut, cwd, cfg.Root, trace.Entries())
 	}
 	if statsFlag {
 		report.StatsLine(errOut, report.Stats{Rules: engineStats.Rules, Files: engineStats.Files, Pairs: engineStats.Pairs, Calls: engineStats.Calls, CacheHits: int(hits.Load()), InputTokens: engineStats.InputTokens, OutputTokens: engineStats.OutputTokens, CostUSD: engineStats.CostUSD})

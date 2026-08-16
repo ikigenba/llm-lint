@@ -34,33 +34,13 @@ type TraceEntry struct {
 	Outcome    string
 }
 
-type Trace struct {
-	mu      sync.Mutex
-	entries []TraceEntry
-}
-
-func (t *Trace) Add(entry TraceEntry) {
-	if t == nil {
-		return
-	}
-	t.mu.Lock()
-	defer t.mu.Unlock()
-	t.entries = append(t.entries, entry)
-}
-
-func (t *Trace) Entries() []TraceEntry {
-	if t == nil {
-		return nil
-	}
-	t.mu.Lock()
-	defer t.mu.Unlock()
-	return append([]TraceEntry(nil), t.entries...)
+type TraceSink interface {
+	Add(TraceEntry)
 }
 
 type Engine struct {
 	Client      Client
 	Concurrency int
-	Trace       *Trace
 }
 
 type Stats struct {

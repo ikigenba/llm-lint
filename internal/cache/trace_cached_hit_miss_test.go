@@ -3,10 +3,28 @@ package cache
 import (
 	"context"
 	"reflect"
+	"sync"
 	"testing"
 
 	"github.com/ikigenba/llm-lint/internal/engine"
 )
+
+type traceSink struct {
+	mu      sync.Mutex
+	entries []engine.TraceEntry
+}
+
+func (s *traceSink) Add(entry engine.TraceEntry) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.entries = append(s.entries, entry)
+}
+
+func (s *traceSink) Entries() []engine.TraceEntry {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return append([]engine.TraceEntry(nil), s.entries...)
+}
 
 func TestTraceRecordsCachedHitAndMiss(t *testing.T) {
 	// R-H58A-GNO1
@@ -18,7 +36,7 @@ func TestTraceRecordsCachedHitAndMiss(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	trace := &engine.Trace{}
+	trace := &traceSink{}
 	next := &fakeClient{}
 	client := &CachingClient{Store: &Store{Dir: dir}, Next: next, Trace: trace}
 	if _, _, err := client.Judge(context.Background(), rule, "hit.go", content); err != nil {
