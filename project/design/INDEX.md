@@ -15,7 +15,7 @@ whenever a Decision is added or its Verification ids change.
   R-IZIF-3SFS, R-J0QB-HK6H, R-J364-93NV, R-J4E0-MVEK, R-J5LX-0N59
 - D3 → `D03.md` — Rule model and catalog — R-GAN5-IZVF, R-GBV1-WRM4,
   R-GD2Y-AJCT, R-2LGZ-C5OJ, R-2MOV-PXF8, R-2NWS-3P5X, R-GEAU-OB3I,
-  R-GFIR-22U7, R-GGQN-FUKW, R-2P4O-HGWM
+  R-GFIR-22U7, R-GGQN-FUKW, R-2P4O-HGWM, R-4HI3-PKJF
 - D4 → `D04.md` — Candidate file walking — R-GJ6G-7E2A, R-GKEC-L5SZ,
   R-GLM8-YXJO, R-GO21-QH12, R-GP9Y-48RR, R-GQHU-I0IG
 - D5 → `D05.md` — Inference engine — R-GRPQ-VS95, R-GSXN-9JZU, R-GU5J-NBQJ,
@@ -30,6 +30,7 @@ whenever a Decision is added or its Verification ids change.
 - D9 → `D09.md` — Built-in rule: no-sleep-in-tests — R-HIJJ-AQKF
 - D10 → `D10.md` — Release and installation — R-HJRF-OIB4, R-HKZC-2A1T
 - D11 → `D11.md` — Self-lint gate (dogfooding) — none — structural
+- D12 → `D12.md` — Built-in rule: boolean-state-machine — R-4IQ0-3CA4
 
 ## Verification ids → Decision
 
@@ -39,6 +40,8 @@ whenever a Decision is added or its Verification ids change.
 - R-2MOV-PXF8 — D3 (`D03.md`)
 - R-2NWS-3P5X — D3 (`D03.md`)
 - R-2P4O-HGWM — D3 (`D03.md`)
+- R-4HI3-PKJF — D3 (`D03.md`)
+- R-4IQ0-3CA4 — D12 (`D12.md`)
 - R-ETNZ-VY1Q — D5 (`D05.md`)
 - R-FR4R-EO0B — D1 (`D01.md`)
 - R-FSCN-SFR0 — D1 (`D01.md`)

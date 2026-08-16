@@ -37,9 +37,10 @@ works like the linters developers already know.
 ## Scope
 
 llm-lint lints files against prompt-defined rules and reports findings; it
-does nothing else. It ships a built-in rule catalog (starting with a single
-rule: sleeps in tests papering over timing issues) and runs project-supplied
-rule files alongside it. Every rule available to a run is active by default; a
+does nothing else. It ships a built-in rule catalog of judgment-only
+anti-patterns (sleeps in tests papering over timing issues; groups of booleans
+standing in for a single multi-state value) and runs project-supplied rule
+files alongside it. Every rule available to a run is active by default; a
 project narrows the run to a chosen subset or silences individual rules by name
 in its config. It never modifies the code it lints, never manages adjudication or override
 state beyond honoring inline suppression comments, and never runs as a daemon
@@ -72,7 +73,11 @@ repeatable, and conventional, not to guarantee a perfect verdict.
   chosen subset of rules or silence individual rules by name in
   `.llm-lint.json`. Projects add their own rules as committed prompt files that
   behave identically to built-in ones and run alongside them, and can list
-  every rule available to a run and see which are active.
+  every rule available to a run and see which are active. A rule that does not
+  say which files it applies to runs over one shared default set of code-file
+  types — the same set for every such rule, built-in or project-authored — so
+  rules never silently diverge in what they examine unless a rule opts out by
+  naming its own files.
 - A finding judged acceptable is silenced by an ordinary inline comment
   (`llm-lint:ignore`), committed next to the code, exactly like other linters'
   suppression comments — this is also how build loops override a false
