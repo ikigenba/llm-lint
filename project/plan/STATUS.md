@@ -7,5 +7,4 @@ that phase's body file, deleting the line and the file on completion.
 
 Next phase: 28
 
-- Phase 26 ⬜ realizes — — widen the self-lint gate config to the whole catalog (depends on Phase 25)
 - Phase 27 ⬜ realizes R-H1KL-BCFY, R-H2SH-P46N — swap the verbose line to id-first ordering
