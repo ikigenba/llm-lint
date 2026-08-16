@@ -136,6 +136,6 @@ whenever a Decision is added or its Verification ids change.
   where the provider offers it, a cheaper subscription token" → R-GZ15-6EPB,
   R-H091-K6G0, R-J81P-S6MN
 - "Running with the verbose option prints, for every examined file and enabled
-  rule, whether its verdict was cached or freshly judged and whether the rule
-  passed or flagged the file, without altering the findings output" →
-  R-H1KL-BCFY, R-H2SH-P46N
+  rule, a green or red circle for whether the rule passed or flagged the file,
+  followed by the file path and the rule, without altering the findings output"
+  → R-H1KL-BCFY, R-H2SH-P46N
