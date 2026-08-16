@@ -54,7 +54,7 @@ func (c *CachingClient) Judge(ctx context.Context, r rules.Rule, file string, co
 	if err != nil {
 		return c.Next.Judge(ctx, r, file, content)
 	}
-	key := Key("", ruleContent, content)
+	key := Key(ruleContent, content)
 	path := filepath.Join(dir, key[:2], key+".json")
 	if !c.NoRead {
 		findings, ok, readErr := read(path, now)
@@ -88,9 +88,9 @@ func (c *CachingClient) warn(err error) {
 	})
 }
 
-func Key(model string, rulePromptAndMeta, fileContent []byte) string {
+func Key(rulePromptAndMeta, fileContent []byte) string {
 	h := sha256.New()
-	for _, part := range [][]byte{[]byte(model), rulePromptAndMeta, fileContent} {
+	for _, part := range [][]byte{rulePromptAndMeta, fileContent} {
 		var size [8]byte
 		binary.BigEndian.PutUint64(size[:], uint64(len(part)))
 		h.Write(size[:])
