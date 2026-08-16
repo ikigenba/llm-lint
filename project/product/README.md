@@ -95,6 +95,11 @@ repeatable, and conventional, not to guarantee a perfect verdict.
   offending source line so consumers can build stable identities for findings.
 - Every run leaves a complete forensic log of its model exchanges for
   after-the-fact inspection, and can report what a run cost on request.
+- On request, a run prints a per-file, per-rule account of its work: for every
+  file examined and every enabled rule, whether that verdict was reused from
+  cache or freshly judged, and whether the rule passed or flagged the file.
+  This audit view is kept separate from the findings, so it never disturbs the
+  output tooling consumes.
 - It installs the way its siblings do: a released binary fetched by a shell
   installer, runnable on Linux and macOS.
 
@@ -123,3 +128,6 @@ repeatable, and conventional, not to guarantee a perfect verdict.
   against a chosen provider when one is set, authenticated by an env key or,
   where the provider offers it, a cheaper subscription token — all configured
   without code changes.
+- Running with the verbose option prints, for every examined file and enabled
+  rule, whether its verdict was cached or freshly judged and whether the rule
+  passed or flagged the file, without altering the findings output.

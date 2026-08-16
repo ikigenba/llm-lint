@@ -8,7 +8,7 @@ whenever a Decision is added or its Verification ids change.
 
 - D1 → `D01.md` — CLI surface and shallow composition root — R-FR4R-EO0B,
   R-FSCN-SFR0, R-FTKK-67HP, R-FUSG-JZ8E, R-FW0C-XQZ3, R-2J16-KM75,
-  R-FX89-BIPS, R-FYG5-PAGH, R-J6TT-EEVY
+  R-FX89-BIPS, R-FYG5-PAGH, R-J6TT-EEVY, R-H1KL-BCFY, R-H2SH-P46N
 - D2 → `D02.md` — Configuration resolution — R-FZO2-3276, R-G0VY-GTXV,
   R-2K92-YDXU, R-G23U-ULOK, R-G3BR-8DF9, R-G5RJ-ZWWN, R-G6ZG-DONC,
   R-G87C-RGE1, R-G9F9-584Q, R-IVUP-YH7P, R-IX2M-C8YE, R-IYAI-Q0P3,
@@ -20,13 +20,13 @@ whenever a Decision is added or its Verification ids change.
   R-GLM8-YXJO, R-GO21-QH12, R-GP9Y-48RR, R-GQHU-I0IG
 - D5 → `D05.md` — Inference engine — R-GRPQ-VS95, R-GSXN-9JZU, R-GU5J-NBQJ,
   R-GVDG-13H8, R-GWLC-EV7X, R-GXT8-SMYM, R-GZ15-6EPB, R-H091-K6G0,
-  R-J81P-S6MN
+  R-J81P-S6MN, R-H40E-2VXC
 - D6 → `D06.md` — Verdict cache — R-H1GX-XY6P, R-H2OU-BPXE, R-H3WQ-PHO3,
-  R-H54N-39ES, R-H6CJ-H15H
+  R-H54N-39ES, R-H6CJ-H15H, R-H58A-GNO1, R-H6G6-UFEQ
 - D7 → `D07.md` — Inline suppression — R-H8SC-8KMV, R-HA08-MCDK,
   R-HB85-0449, R-HCG1-DVUY
 - D8 → `D08.md` — Reporting, formats, and exit computation — R-HDNX-RNLN,
-  R-HEVU-5FCC, R-HG3Q-J731, R-HHBM-WYTQ
+  R-HEVU-5FCC, R-HG3Q-J731, R-HHBM-WYTQ, R-H7O3-875F
 - D9 → `D09.md` — Built-in rule: no-sleep-in-tests — R-HIJJ-AQKF
 - D10 → `D10.md` — Release and installation — R-HJRF-OIB4, R-HKZC-2A1T
 - D11 → `D11.md` — Self-lint gate (dogfooding) — none — structural
@@ -75,10 +75,16 @@ whenever a Decision is added or its Verification ids change.
 - R-GZ15-6EPB — D5 (`D05.md`)
 - R-H091-K6G0 — D5 (`D05.md`)
 - R-H1GX-XY6P — D6 (`D06.md`)
+- R-H1KL-BCFY — D1 (`D01.md`)
 - R-H2OU-BPXE — D6 (`D06.md`)
+- R-H2SH-P46N — D1 (`D01.md`)
 - R-H3WQ-PHO3 — D6 (`D06.md`)
+- R-H40E-2VXC — D5 (`D05.md`)
 - R-H54N-39ES — D6 (`D06.md`)
+- R-H58A-GNO1 — D6 (`D06.md`)
 - R-H6CJ-H15H — D6 (`D06.md`)
+- R-H6G6-UFEQ — D6 (`D06.md`)
+- R-H7O3-875F — D8 (`D08.md`)
 - R-H8SC-8KMV — D7 (`D07.md`)
 - R-HA08-MCDK — D7 (`D07.md`)
 - R-HB85-0449 — D7 (`D07.md`)
@@ -131,3 +137,7 @@ whenever a Decision is added or its Verification ids change.
   against a chosen provider when one is set, authenticated by an env key or,
   where the provider offers it, a cheaper subscription token" → R-GZ15-6EPB,
   R-H091-K6G0, R-J81P-S6MN
+- "Running with the verbose option prints, for every examined file and enabled
+  rule, whether its verdict was cached or freshly judged and whether the rule
+  passed or flagged the file, without altering the findings output" →
+  R-H1KL-BCFY, R-H2SH-P46N
