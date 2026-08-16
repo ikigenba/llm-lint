@@ -6,5 +6,3 @@ status markers. The build loop finds its next work with
 that phase's body file, deleting the line and the file on completion.
 
 Next phase: 16
-
-- Phase 15 ⬜ realizes — drop the model from the cache key
