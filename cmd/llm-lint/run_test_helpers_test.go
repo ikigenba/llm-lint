@@ -38,6 +38,10 @@ func lintTree(t *testing.T) string {
 	if err := os.WriteFile(filepath.Join(dir, "sample_test.go"), []byte("sample\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
+	config := []byte(`{"disable":["boolean-state-machine"]}`)
+	if err := os.WriteFile(filepath.Join(dir, ".llm-lint.json"), config, 0o600); err != nil {
+		t.Fatal(err)
+	}
 	return dir
 }
 

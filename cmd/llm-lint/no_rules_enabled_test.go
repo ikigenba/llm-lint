@@ -13,7 +13,7 @@ func TestRunWithEveryActiveRuleDisabledWarnsAndSucceeds(t *testing.T) {
 	client := &fakeClient{}
 	bindClient(t, client)
 	dir := t.TempDir()
-	config := []byte(`{"disable":["no-sleep-in-tests"]}`)
+	config := []byte(`{"disable":["boolean-state-machine","no-sleep-in-tests"]}`)
 	if err := os.WriteFile(filepath.Join(dir, ".llm-lint.json"), config, 0o600); err != nil {
 		t.Fatal(err)
 	}

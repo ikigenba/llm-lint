@@ -44,6 +44,10 @@ func verboseLintTree(t *testing.T) (string, string) {
 	if err := os.WriteFile(rulePath, []byte(rule), 0o600); err != nil {
 		t.Fatal(err)
 	}
+	config := []byte(`{"disable":["boolean-state-machine"]}`)
+	if err := os.WriteFile(filepath.Join(root, ".llm-lint.json"), config, 0o600); err != nil {
+		t.Fatal(err)
+	}
 	return root, rulePath
 }
 

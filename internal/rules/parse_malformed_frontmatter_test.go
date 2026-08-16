@@ -9,11 +9,10 @@ import (
 // R-GBV1-WRM4
 func TestParseMalformedFrontmatterReturnsNamedRuleError(t *testing.T) {
 	tests := map[string]string{
-		"unterminated":    "---\ndescription: test\nseverity: error\ninclude: [\"**/*\"]\n",
-		"unknown-key":     "---\ndescription: test\nseverity: error\ninclude: [\"**/*\"]\nsurprise: yes\n---\nbody",
-		"bad-severity":    "---\ndescription: test\nseverity: fatal\ninclude: [\"**/*\"]\n---\nbody",
-		"missing-include": "---\ndescription: test\nseverity: error\n---\nbody",
-		"empty-include":   "---\ndescription: test\nseverity: error\ninclude: []\n---\nbody",
+		"unterminated":  "---\ndescription: test\nseverity: error\ninclude: [\"**/*\"]\n",
+		"unknown-key":   "---\ndescription: test\nseverity: error\ninclude: [\"**/*\"]\nsurprise: yes\n---\nbody",
+		"bad-severity":  "---\ndescription: test\nseverity: fatal\ninclude: [\"**/*\"]\n---\nbody",
+		"empty-include": "---\ndescription: test\nseverity: error\ninclude: []\n---\nbody",
 	}
 	for name, src := range tests {
 		t.Run(name, func(t *testing.T) {

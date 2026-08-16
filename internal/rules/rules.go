@@ -31,6 +31,11 @@ type Rule struct {
 
 var ErrRule = errors.New("rules: invalid rule")
 
+var DefaultCodeGlobs = []string{
+	"**/*.go", "**/*.py", "**/*.js", "**/*.ts", "**/*.java", "**/*.rb",
+	"**/*.rs", "**/*.c", "**/*.h", "**/*.cpp", "**/*.cs",
+}
+
 var validID = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*$`)
 
 //go:embed builtin/*.md
@@ -90,7 +95,9 @@ func Parse(name string, src []byte) (Rule, error) {
 	if rule.Severity != SeverityError && rule.Severity != SeverityWarning {
 		return Rule{}, ruleError(name, "invalid severity %q", rule.Severity)
 	}
-	if len(rule.Include) == 0 {
+	if !seen["include"] {
+		rule.Include = DefaultCodeGlobs
+	} else if len(rule.Include) == 0 {
 		return Rule{}, ruleError(name, "include must contain at least one pattern")
 	}
 	rule.Prompt = string(src[offset:])
