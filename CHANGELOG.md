@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.5.0
+
+- Added a `boolean-state-machine` built-in rule that flags groups of two or
+  more boolean fields, variables, or columns that together encode one concept
+  with more than two states, and recommends replacing them with a single enum
+  or status value.
+- Gave every rule a default set of code file globs, so a rule that omits its
+  `include` now examines common source files (Go, Python, JavaScript,
+  TypeScript, Java, Ruby, Rust, C, C++, C#) instead of having to list them
+  explicitly; an `include` present but empty is still rejected.
+- Reformatted each `--verbose` trace line to lead with a pass or fail circle,
+  then the bracketed rule id, then the file path, so the outcome and the rule
+  read first at a glance.
+
 ## v0.4.0
 
 - Changed `--verbose` to stream its per-file, per-rule audit trace to stderr
