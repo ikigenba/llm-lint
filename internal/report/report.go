@@ -91,7 +91,7 @@ func (s *VerboseSink) Add(entry engine.TraceEntry) {
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	_, _ = fmt.Fprintf(s.w, "%s %s %s\n", circle, name, entry.Rule)
+	_, _ = fmt.Fprintf(s.w, "%s %s [%s]\n", circle, name, entry.Rule)
 }
 
 func sorted(findings []engine.Finding) []engine.Finding {
