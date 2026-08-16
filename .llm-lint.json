@@ -1,0 +1,4 @@
+{
+  "enable": ["no-sleep-in-tests"],
+  "exclude": ["testdata/**"]
+}
