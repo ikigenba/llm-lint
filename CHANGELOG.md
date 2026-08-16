@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.3.0
+
+- Added a `--verbose` option that prints, for every examined file and enabled
+  rule, whether its verdict was served from cache or freshly judged and whether
+  the rule passed or flagged the file, on stderr and without altering the
+  findings written to stdout.
+- Made `--stats` report the run's real input-token, output-token, and cost
+  totals drawn from the model calls it made; previously these figures always
+  printed as zero.
+- Removed the silent skip of files larger than the model's context window: an
+  oversized file is now sent to the model like any other and, if the call
+  cannot complete, surfaces as an ordinary operational failure rather than
+  being quietly passed over.
+
 ## v0.2.0
 
 - Let a run select any supported model by name through the `model` config key,
