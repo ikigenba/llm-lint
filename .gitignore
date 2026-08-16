@@ -3,6 +3,7 @@ project/loops/blocked.md
 
 # Go build and test artifacts
 /llm-lint
+/bin/
 *.exe
 *.test
 *.out
