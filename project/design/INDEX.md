@@ -19,8 +19,8 @@ whenever a Decision is added or its Verification ids change.
 - D4 → `D04.md` — Candidate file walking — R-GJ6G-7E2A, R-GKEC-L5SZ,
   R-GLM8-YXJO, R-GO21-QH12, R-GP9Y-48RR, R-GQHU-I0IG
 - D5 → `D05.md` — Inference engine — R-GRPQ-VS95, R-GSXN-9JZU, R-GU5J-NBQJ,
-  R-GVDG-13H8, R-GWLC-EV7X, R-GXT8-SMYM, R-GZ15-6EPB, R-H091-K6G0,
-  R-J81P-S6MN, R-H40E-2VXC
+  R-GVDG-13H8, R-ETNZ-VY1Q, R-GXT8-SMYM, R-GZ15-6EPB, R-H091-K6G0,
+  R-J81P-S6MN
 - D6 → `D06.md` — Verdict cache — R-H1GX-XY6P, R-H2OU-BPXE, R-H3WQ-PHO3,
   R-H54N-39ES, R-H6CJ-H15H, R-H58A-GNO1, R-H6G6-UFEQ
 - D7 → `D07.md` — Inline suppression — R-H8SC-8KMV, R-HA08-MCDK,
@@ -39,6 +39,7 @@ whenever a Decision is added or its Verification ids change.
 - R-2MOV-PXF8 — D3 (`D03.md`)
 - R-2NWS-3P5X — D3 (`D03.md`)
 - R-2P4O-HGWM — D3 (`D03.md`)
+- R-ETNZ-VY1Q — D5 (`D05.md`)
 - R-FR4R-EO0B — D1 (`D01.md`)
 - R-FSCN-SFR0 — D1 (`D01.md`)
 - R-FTKK-67HP — D1 (`D01.md`)
@@ -70,7 +71,6 @@ whenever a Decision is added or its Verification ids change.
 - R-GSXN-9JZU — D5 (`D05.md`)
 - R-GU5J-NBQJ — D5 (`D05.md`)
 - R-GVDG-13H8 — D5 (`D05.md`)
-- R-GWLC-EV7X — D5 (`D05.md`)
 - R-GXT8-SMYM — D5 (`D05.md`)
 - R-GZ15-6EPB — D5 (`D05.md`)
 - R-H091-K6G0 — D5 (`D05.md`)
@@ -79,7 +79,6 @@ whenever a Decision is added or its Verification ids change.
 - R-H2OU-BPXE — D6 (`D06.md`)
 - R-H2SH-P46N — D1 (`D01.md`)
 - R-H3WQ-PHO3 — D6 (`D06.md`)
-- R-H40E-2VXC — D5 (`D05.md`)
 - R-H54N-39ES — D6 (`D06.md`)
 - R-H58A-GNO1 — D6 (`D06.md`)
 - R-H6CJ-H15H — D6 (`D06.md`)

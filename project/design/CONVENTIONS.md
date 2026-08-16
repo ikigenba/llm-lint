@@ -7,8 +7,9 @@
 - **Test command**: `go test ./...`
 - **The suite is green** when `gofmt -l .` prints nothing (excluding
   `project/`), `go vet ./...` is clean, and `go test ./...` exits 0. Live
-  integration tests `t.Skip` when their provider env key is absent, so green
-  does not require credentials.
+  integration tests `t.Skip` when their required credential is absent — a
+  provider env key, or a subscription token file for the sub-auth smoke — so
+  green does not require credentials.
 - **Self-lint gate** (D11): beyond the suite, the build loop's verify turn runs
   the installed `llm-lint` binary over the tree and requires zero findings. It
   calls a model, so this gate runs **only when a provider API key is present**
