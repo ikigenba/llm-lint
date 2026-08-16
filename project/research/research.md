@@ -24,11 +24,33 @@ The suite's multi-provider LLM client. The parts llm-lint uses:
   `In` struct via reflection and decodes the model's call into it. Forcing is
   done by instruction (system prompt demands the tool call); the caller must
   handle the model answering in prose without calling the tool.
-- **Providers**: `openai.New(openai.APIKey(key), opts...)`,
-  `google.New(google.APIKey(key), opts...)` etc. — one constructor per
-  provider package, credential as a typed value. autotune's
-  `internal/config/config.go` is the reference for building a provider from a
-  catalog resolution plus `getenv`.
+- **Providers**: `openai.New(cred, opts...)`, `google.New(cred, opts...)` etc.
+  — one constructor per provider package, taking a typed `Credential`. The
+  key credential is `openai.APIKey(key)` (and the analogue per package).
+  autotune's `internal/config/config.go` is the reference for building a
+  provider from a catalog resolution plus `getenv`.
+- **Subscription credential**: `openai` and `xai` additionally expose
+  `Subscription(ts TokenSource) Credential` and a sibling package
+  `openai/subscription` (and `xai/subscription`) whose `Load(path) (*Store,
+  error)` reads a raw OAuth token-endpoint response file; the returned `*Store`
+  satisfies `TokenSource`. `Load` requires the file to be JSON with a non-empty
+  `access_token`, and derives a ChatGPT account id by base64url-decoding the
+  JWT payload of `id_token` (falling back to `access_token`) and reading the
+  `https://api.openai.com/auth` → `chatgpt_account_id` claim; a missing token
+  or account claim is an error. The **signature is never verified** (only the
+  payload is base64-decoded), so a test can construct a synthetic-but-loadable
+  token file — agentkit's own `openai/subscription/subscription_test.go`
+  (`TestLoadDerivesAccountFromRawTokenResponse`) is the reference. `Load`
+  performs no discovery and reads no ambient credentials: the caller owns path
+  selection and the initial login. `agentkit` has **no** subscription support
+  for the other four providers.
+- **Provider env keys and auth methods** (agent-repl's catalog wrapper is the
+  reference for the exact strings): `anthropic`/`ANTHROPIC_API_KEY` (key only),
+  `google`/`GEMINI_API_KEY` (key only), `openai`/`OPENAI_API_KEY` (**sub**,
+  key — first is the default), `openrouter`/`OPENROUTER_API_KEY` (key only),
+  `x-ai`/`XAI_API_KEY` (**sub**, key), `z-ai`/`ZAI_API_KEY` (key only).
+  agent-repl's default auth file is `~/.agentrepl/<provider>-auth.json` via
+  `config.DefaultAuthFile(dir, providerID)`.
 - **Catalog** (`agentkit/catalog`): `Lookup(model) (Entry, bool)`,
   `Resolve(provider, model)`, `ListCurated(provider)`, plus reasoning
   validation via `Check`. Entries carry context window, pricing, and the
@@ -53,7 +75,21 @@ The suite's multi-provider LLM client. The parts llm-lint uses:
 - **Flat model config keys** (agent-repl README): `provider`, `model`,
   `system`, `temperature`, `top_p`, `max_tokens`, the native reasoning keys
   (`effort`, `thinking_budget`, `thinking_level`, `thinking`), the retry keys,
-  `base_url` (zai only). The literal value `default` resets a key to unset.
+  `base_url`, and the auth keys `auth` (`key`|`sub`) and `auth_file`. The
+  literal value `default` resets a key to unset.
+- **Model/provider/auth selection** (agent-repl `internal/config/config.go`,
+  `internal/repl/help.go`): a bare `model=` derives its provider from the
+  catalog's first offering for that model (`catalog.Resolve` with an empty
+  provider); setting `provider=` pins the provider explicitly so derivation is
+  skipped. `auth`, when unset, takes the provider's **first** listed method
+  (so openai/x-ai default to `sub`, the rest to `key`); setting `auth=sub` on a
+  key-only provider is rejected. `WriteHelp` renders a `providers:` block (each
+  provider's `auth=key (ENVVAR)` and, where supported, `auth=sub
+  (auth_file=…)`) followed by each provider's models with reasoning clauses
+  (`*` marks the default), then a footer describing bare-`model=` vs.
+  explicit-provider selection. agent-repl warns and *passes through* an
+  uncatalogued model when a provider is set explicitly (no pricing, reasoning
+  unchecked).
 - **Live-test gating**: agentkit's own integration tests skip when the
   provider key is absent (`deferred_tools_integration_test.go:19-21`:
   `os.Getenv("ANTHROPIC_API_KEY")` → `t.Skip`). This keeps `go test ./...`

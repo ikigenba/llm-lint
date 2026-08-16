@@ -8,17 +8,19 @@ whenever a Decision is added or its Verification ids change.
 
 - D1 → `D01.md` — CLI surface and shallow composition root — R-FR4R-EO0B,
   R-FSCN-SFR0, R-FTKK-67HP, R-FUSG-JZ8E, R-FW0C-XQZ3, R-2J16-KM75,
-  R-FX89-BIPS, R-FYG5-PAGH
+  R-FX89-BIPS, R-FYG5-PAGH, R-J6TT-EEVY
 - D2 → `D02.md` — Configuration resolution — R-FZO2-3276, R-G0VY-GTXV,
   R-2K92-YDXU, R-G23U-ULOK, R-G3BR-8DF9, R-G5RJ-ZWWN, R-G6ZG-DONC,
-  R-G87C-RGE1, R-G9F9-584Q
+  R-G87C-RGE1, R-G9F9-584Q, R-IVUP-YH7P, R-IX2M-C8YE, R-IYAI-Q0P3,
+  R-IZIF-3SFS, R-J0QB-HK6H, R-J364-93NV, R-J4E0-MVEK, R-J5LX-0N59
 - D3 → `D03.md` — Rule model and catalog — R-GAN5-IZVF, R-GBV1-WRM4,
   R-GD2Y-AJCT, R-2LGZ-C5OJ, R-2MOV-PXF8, R-2NWS-3P5X, R-GEAU-OB3I,
   R-GFIR-22U7, R-GGQN-FUKW, R-2P4O-HGWM
 - D4 → `D04.md` — Candidate file walking — R-GJ6G-7E2A, R-GKEC-L5SZ,
   R-GLM8-YXJO, R-GO21-QH12, R-GP9Y-48RR, R-GQHU-I0IG
 - D5 → `D05.md` — Inference engine — R-GRPQ-VS95, R-GSXN-9JZU, R-GU5J-NBQJ,
-  R-GVDG-13H8, R-GWLC-EV7X, R-GXT8-SMYM, R-GZ15-6EPB, R-H091-K6G0
+  R-GVDG-13H8, R-GWLC-EV7X, R-GXT8-SMYM, R-GZ15-6EPB, R-H091-K6G0,
+  R-J81P-S6MN
 - D6 → `D06.md` — Verdict cache — R-H1GX-XY6P, R-H2OU-BPXE, R-H3WQ-PHO3,
   R-H54N-39ES, R-H6CJ-H15H
 - D7 → `D07.md` — Inline suppression — R-H8SC-8KMV, R-HA08-MCDK,
@@ -88,6 +90,16 @@ whenever a Decision is added or its Verification ids change.
 - R-HIJJ-AQKF — D9 (`D09.md`)
 - R-HJRF-OIB4 — D10 (`D10.md`)
 - R-HKZC-2A1T — D10 (`D10.md`)
+- R-IVUP-YH7P — D2 (`D02.md`)
+- R-IX2M-C8YE — D2 (`D02.md`)
+- R-IYAI-Q0P3 — D2 (`D02.md`)
+- R-IZIF-3SFS — D2 (`D02.md`)
+- R-J0QB-HK6H — D2 (`D02.md`)
+- R-J364-93NV — D2 (`D02.md`)
+- R-J4E0-MVEK — D2 (`D02.md`)
+- R-J5LX-0N59 — D2 (`D02.md`)
+- R-J6TT-EEVY — D1 (`D01.md`)
+- R-J81P-S6MN — D5 (`D05.md`)
 
 ## Success criteria → ids
 
@@ -113,3 +125,9 @@ whenever a Decision is added or its Verification ids change.
 - "The released artifact installs via the installer script onto a clean
   Linux or macOS machine and reports its release version" → R-HJRF-OIB4,
   R-HKZC-2A1T, R-FW0C-XQZ3
+- "`llm-lint --help` lists every selectable model grouped by provider, with
+  each provider's authentication options" → R-J6TT-EEVY
+- "A model runs against its default provider when only its name is given and
+  against a chosen provider when one is set, authenticated by an env key or,
+  where the provider offers it, a cheaper subscription token" → R-GZ15-6EPB,
+  R-H091-K6G0, R-J81P-S6MN

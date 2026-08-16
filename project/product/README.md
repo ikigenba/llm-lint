@@ -80,8 +80,17 @@ repeatable, and conventional, not to guarantee a perfect verdict.
 - Re-running on an unchanged tree is fast and spends nothing: verdicts are
   remembered per file and rule content, and only what changed is re-judged.
 - With a provider API key in the environment it works out of the box on the
-  default model; the model and its generation settings are configurable per
-  project and per invocation.
+  default model. Any of its supported models can be selected by name — using
+  that model's default provider, or a provider named explicitly — and its
+  generation settings are configurable per project and per invocation. All of
+  this model configuration is set the same way, through repeatable config
+  overrides, with no dedicated per-setting flags.
+- Where a provider offers a subscription, a run can authenticate against that
+  subscription instead of a metered API key — the cheaper path — by pointing
+  it at a subscription token file, chosen entirely in configuration.
+- Asking for help lists every model available to a run, grouped by provider,
+  with each provider's authentication options, so a user can see what they can
+  select without leaving the terminal.
 - Machine-readable output is available for tooling, carrying the exact
   offending source line so consumers can build stable identities for findings.
 - Every run leaves a complete forensic log of its model exchanges for
@@ -108,3 +117,9 @@ repeatable, and conventional, not to guarantee a perfect verdict.
 - A user can list every available rule and see which are enabled.
 - The released artifact installs via the installer script onto a clean Linux
   or macOS machine and reports its release version.
+- Running `llm-lint --help` lists every selectable model grouped by provider,
+  with each provider's authentication options.
+- A model runs against its default provider when only its name is given and
+  against a chosen provider when one is set, authenticated by an env key or,
+  where the provider offers it, a cheaper subscription token — all configured
+  without code changes.
