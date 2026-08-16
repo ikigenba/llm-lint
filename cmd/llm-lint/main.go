@@ -12,6 +12,8 @@ import (
 	"strings"
 	"sync/atomic"
 
+	"github.com/ikigenba/agentkit"
+	"github.com/ikigenba/agentkit/catalog"
 	"github.com/ikigenba/llm-lint/internal/cache"
 	"github.com/ikigenba/llm-lint/internal/config"
 	"github.com/ikigenba/llm-lint/internal/engine"
@@ -45,7 +47,86 @@ var newClient = func(cfg *config.Config, errOut io.Writer) (engine.Client, error
 
 func usage(w io.Writer) {
 	fmt.Fprintln(w, "Usage: llm-lint [options] [path...]")
-	fmt.Fprintln(w, "Options: -c key=value, --rules path, --model id, --format text|json, --concurrency N, --no-cache, --stats, --list-rules, -V, --version, --help")
+	fmt.Fprintln(w, "Options: -c key=value, --rules path, --format text|json, --concurrency N, --no-cache, --stats, --list-rules, -V, --version, --help")
+}
+
+func printHelp(w io.Writer) {
+	usage(w)
+	fmt.Fprintln(w, "providers:")
+	for _, provider := range config.Providers() {
+		info, ok := config.ProviderInfo(provider)
+		if !ok {
+			continue
+		}
+		fmt.Fprintf(w, "  %s\n", provider)
+		fmt.Fprintf(w, "    auth=key (%s)\n", info.EnvKey)
+		if supportsAuth(info.Methods, "sub") {
+			fmt.Fprintf(w, "    auth=sub (auth_file=~/.llm-lint/%s-auth.json)\n", provider)
+		}
+		for _, entry := range catalog.ListCurated(provider) {
+			fmt.Fprintf(w, "    %s (%s)\n", entry.Model, reasoningClause(entry, provider))
+		}
+	}
+	fmt.Fprintln(w, "bare model= derives its provider and must name a catalogued model")
+	fmt.Fprintln(w, "explicit provider= accepts any model as pass-through")
+}
+
+func supportsAuth(methods []string, want string) bool {
+	for _, method := range methods {
+		if method == want {
+			return true
+		}
+	}
+	return false
+}
+
+func reasoningClause(entry catalog.Entry, provider agentkit.ProviderID) string {
+	for _, offering := range entry.Offerings {
+		if offering.Provider != provider {
+			continue
+		}
+		if offering.Reasoning == nil {
+			return "reasoning=none*"
+		}
+		spec := offering.Reasoning
+		var choices []string
+		if spec.CanDisable {
+			choices = append(choices, markReasoningDefault("off", spec.Default.Value.Disabled()))
+		}
+		if spec.CanEnable {
+			choices = append(choices, markReasoningDefault("on", spec.Default.Value.Enabled()))
+		}
+		for _, level := range spec.Levels {
+			defaultLevel, isLevel := spec.Default.Value.Level()
+			choices = append(choices, markReasoningDefault(level, isLevel && level == defaultLevel))
+		}
+		if spec.Min != 0 || spec.Max != 0 {
+			budget, isBudget := spec.Default.Value.Budget()
+			value := fmt.Sprintf("%d..%d", spec.Min, spec.Max)
+			if isBudget {
+				value += fmt.Sprintf(" (default %d*)", budget)
+			}
+			choices = append(choices, value)
+		}
+		if len(choices) == 0 {
+			choices = append(choices, "provider-default*")
+		} else if !strings.Contains(strings.Join(choices, ""), "*") {
+			choices = append(choices, "provider-default*")
+		}
+		term := spec.Term
+		if term == "" {
+			term = "reasoning"
+		}
+		return fmt.Sprintf("reasoning %s=%s", term, strings.Join(choices, "|"))
+	}
+	return "reasoning=none*"
+}
+
+func markReasoningDefault(value string, isDefault bool) string {
+	if isDefault {
+		return value + "*"
+	}
+	return value
 }
 
 func run(args []string, in io.Reader, out, errOut io.Writer, getenv func(string) string, cwd string) int {
@@ -53,12 +134,11 @@ func run(args []string, in io.Reader, out, errOut io.Writer, getenv func(string)
 	fs.SetOutput(errOut)
 	fs.Usage = func() { usage(errOut) }
 	var overrides, rulePaths stringList
-	var model, format string
+	var format string
 	var concurrency int
 	var noCache, statsFlag, listRules, versionFlag, help bool
 	fs.Var(&overrides, "c", "config override key=value (repeatable)")
 	fs.Var(&rulePaths, "rules", "additional rule file or directory (repeatable)")
-	fs.StringVar(&model, "model", "", "model id")
 	fs.StringVar(&format, "format", "text", "output format: text or json")
 	fs.IntVar(&concurrency, "concurrency", 8, "maximum in-flight inference calls")
 	fs.BoolVar(&noCache, "no-cache", false, "skip cache reads")
@@ -73,7 +153,7 @@ func run(args []string, in io.Reader, out, errOut io.Writer, getenv func(string)
 	}
 	_ = in
 	if help {
-		usage(out)
+		printHelp(out)
 		return 0
 	}
 	if versionFlag {
@@ -88,9 +168,6 @@ func run(args []string, in io.Reader, out, errOut io.Writer, getenv func(string)
 		fmt.Fprintln(errOut, "llm-lint: concurrency must be positive")
 		return 2
 	}
-	if model != "" {
-		overrides = append(overrides, "model="+model)
-	}
 	cfg, err := config.Load(cwd, overrides, getenv)
 	if err != nil {
 		fmt.Fprintf(errOut, "llm-lint: %v\n", err)
@@ -98,6 +175,9 @@ func run(args []string, in io.Reader, out, errOut io.Writer, getenv func(string)
 			return 3
 		}
 		return 2
+	}
+	for _, warning := range cfg.Warnings {
+		fmt.Fprintf(errOut, "llm-lint: %s\n", warning)
 	}
 	cfg.Rules = append(cfg.Rules, rulePaths...)
 	allRules := rules.BuiltIns()

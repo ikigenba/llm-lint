@@ -16,7 +16,7 @@ func TestRunLiveOpenAIGPTLunaReportsSleepPastRace(t *testing.T) {
 
 	cwd := filepath.Join("..", "..", "testdata", "live-smoke")
 	var out, errOut bytes.Buffer
-	code := run([]string{"-c", "model=gpt-5.6-luna", "--no-cache"}, bytes.NewReader(nil), &out, &errOut, os.Getenv, cwd)
+	code := run([]string{"-c", "model=gpt-5.6-luna", "-c", "auth=key", "--no-cache"}, bytes.NewReader(nil), &out, &errOut, os.Getenv, cwd)
 	if code != 1 {
 		t.Fatalf("run() = %d, want 1; stdout %q; stderr %q", code, out.String(), errOut.String())
 	}

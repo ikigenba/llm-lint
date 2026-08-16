@@ -10,8 +10,8 @@ import (
 
 // R-GZ15-6EPB
 func TestRunLiveGoogleGeminiFlashReportsSleepPastRace(t *testing.T) {
-	if os.Getenv("GOOGLE_API_KEY") == "" {
-		t.Skip("GOOGLE_API_KEY is not set")
+	if os.Getenv("GEMINI_API_KEY") == "" {
+		t.Skip("GEMINI_API_KEY is not set")
 	}
 
 	cwd := filepath.Join("..", "..", "testdata", "live-smoke")
