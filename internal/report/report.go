@@ -85,13 +85,13 @@ func (s *VerboseSink) Add(entry engine.TraceEntry) {
 	if rel, err := filepath.Rel(s.cwd, path); err == nil {
 		name = rel
 	}
-	cacheStatus := "miss"
-	if entry.Cached {
-		cacheStatus = "hit"
+	circle := "🔴"
+	if entry.Outcome == "pass" {
+		circle = "🟢"
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	_, _ = fmt.Fprintf(s.w, "%s: %s %s %s\n", name, entry.Rule, cacheStatus, entry.Outcome)
+	_, _ = fmt.Fprintf(s.w, "%s %s %s\n", circle, name, entry.Rule)
 }
 
 func sorted(findings []engine.Finding) []engine.Finding {

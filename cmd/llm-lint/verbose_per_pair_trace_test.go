@@ -97,10 +97,10 @@ func TestRunVerboseWritesPerPairTraceOnlyToStderr(t *testing.T) {
 		t.Fatalf("run() code = %d, stderr = %q", code, errOut.String())
 	}
 	wantTrace := []string{
-		"alpha_test.go: extra-audit miss pass",
-		"alpha_test.go: no-sleep-in-tests miss fail",
-		"beta_test.go: extra-audit miss pass",
-		"beta_test.go: no-sleep-in-tests miss fail",
+		"🟢 alpha_test.go extra-audit",
+		"🔴 alpha_test.go no-sleep-in-tests",
+		"🟢 beta_test.go extra-audit",
+		"🔴 beta_test.go no-sleep-in-tests",
 	}
 	gotTrace := strings.Split(strings.TrimSpace(errOut.String()), "\n")
 	sort.Strings(gotTrace)
@@ -108,7 +108,7 @@ func TestRunVerboseWritesPerPairTraceOnlyToStderr(t *testing.T) {
 	if !equalStrings(gotTrace, wantTrace) {
 		t.Fatalf("verbose stderr = %#v, want %#v", gotTrace, wantTrace)
 	}
-	if strings.Count(out.String(), "found issue") != 2 || strings.Contains(out.String(), " miss ") {
+	if strings.Count(out.String(), "found issue") != 2 || strings.Contains(out.String(), "🟢") || strings.Contains(out.String(), "🔴") {
 		t.Fatalf("findings stdout = %q; want two findings and no trace", out.String())
 	}
 
