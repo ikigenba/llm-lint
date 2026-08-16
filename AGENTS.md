@@ -55,3 +55,16 @@ fetches. Latest is `git tag --sort=-v:refname | head -1`. The changelog
 follows the agentkit convention: one `## vX.Y.Z` section per release, newest
 first, flat past-tense full-sentence bullets describing what changed for a
 user of the binary.
+
+### Cutting a release
+
+1. Confirm the green bar (see Tests): `go build ./...`, `go vet ./...`,
+   `go test ./...` exit 0 and `gofmt -l .` is empty (excluding `project/`),
+   with a clean working tree.
+2. Pick the next version from `git tag --sort=-v:refname | head -1`, bumping
+   MAJOR/MINOR/PATCH per the change.
+3. Add the `## vX.Y.Z` section to `CHANGELOG.md` and commit it (this is the
+   release commit) on `main`.
+4. Tag it: `git tag -a vX.Y.Z -m "vX.Y.Z"`.
+5. Push branch and tag together: `git push --follow-tags`. The `v*` tag push
+   runs goreleaser and publishes the archives `install.sh` fetches.

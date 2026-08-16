@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.2.0
+
+- Let a run select any supported model by name through the `model` config key,
+  running it against that model's default provider automatically; a bare model
+  name must be one of the catalogued models, while naming a provider explicitly
+  with `provider` accepts any model as pass-through.
+- Added provider and authentication selection via the `provider`, `auth`, and
+  `auth_file` config keys, spanning the Anthropic, Google, OpenAI, OpenRouter,
+  xAI, and Z.AI providers, each with its own API-key environment variable.
+- Allowed a run to authenticate against a provider subscription instead of a
+  metered API key, the cheaper path, by setting `auth=sub` and pointing
+  `auth_file` at a subscription token file (defaulting to
+  `~/.llm-lint/<provider>-auth.json`); subscription auth is offered where the
+  provider supports it.
+- Extended `llm-lint --help` to list every selectable model grouped by
+  provider, each provider's authentication options, and its API-key environment
+  variable, so a user can see what they can select without leaving the terminal.
+- Kept all model configuration on the repeatable `-c key=value` override
+  mechanism with no dedicated per-setting flags.
+
 ## v0.1.0
 
 - Introduced `llm-lint`, a CLI that lints a code tree against prompt-defined
