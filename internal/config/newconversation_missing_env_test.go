@@ -13,7 +13,7 @@ func TestNewConversationMissingProviderEnvironment(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err = cfg.NewConversation("system", nil)
-	if !errors.Is(err, ErrAuth) || !strings.Contains(err.Error(), "GOOGLE_API_KEY") {
-		t.Fatalf("error = %v, want ErrAuth naming GOOGLE_API_KEY", err)
+	if !errors.Is(err, ErrAuth) || !strings.Contains(err.Error(), "GEMINI_API_KEY") {
+		t.Fatalf("error = %v, want ErrAuth naming GEMINI_API_KEY", err)
 	}
 }

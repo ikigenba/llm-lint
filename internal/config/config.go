@@ -17,33 +17,71 @@ import (
 	"github.com/ikigenba/agentkit/catalog"
 	"github.com/ikigenba/agentkit/google"
 	"github.com/ikigenba/agentkit/openai"
+	openaisub "github.com/ikigenba/agentkit/openai/subscription"
 	"github.com/ikigenba/agentkit/openrouter"
 	"github.com/ikigenba/agentkit/xai"
+	xaisub "github.com/ikigenba/agentkit/xai/subscription"
 	"github.com/ikigenba/agentkit/zai"
 )
 
 const defaultModel = "gemini-3.7-flash"
 
 type Config struct {
-	Root    string
-	Enable  []string
-	Disable []string
-	Rules   []string
-	Exclude []string
-	Model   Model
+	Root     string
+	Enable   []string
+	Disable  []string
+	Rules    []string
+	Exclude  []string
+	Model    Model
+	Warnings []string
 
 	getenv func(string) string
 }
 
 type Model struct {
-	Provider    string
-	ModelID     string
-	BaseURL     string
-	Temperature *float64
-	TopP        *float64
-	MaxTokens   int
-	Reasoning   agentkit.ReasoningValue
-	Retry       agentkit.RetryPolicy
+	Provider, ModelID, BaseURL string
+	ProviderExplicit           bool
+	Auth                       string
+	AuthFile                   string
+	Temperature, TopP          *float64
+	MaxTokens                  int
+	Reasoning                  agentkit.ReasoningValue
+	Retry                      agentkit.RetryPolicy
+}
+
+type ProviderSpec struct {
+	EnvKey  string
+	Methods []string
+}
+
+func Providers() []agentkit.ProviderID {
+	return []agentkit.ProviderID{
+		agentkit.ProviderAnthropic,
+		agentkit.ProviderGoogle,
+		agentkit.ProviderOpenAI,
+		agentkit.ProviderOpenRouter,
+		agentkit.ProviderXAI,
+		agentkit.ProviderZAI,
+	}
+}
+
+func ProviderInfo(id agentkit.ProviderID) (ProviderSpec, bool) {
+	switch id {
+	case agentkit.ProviderAnthropic:
+		return ProviderSpec{EnvKey: "ANTHROPIC_API_KEY", Methods: []string{"key"}}, true
+	case agentkit.ProviderGoogle:
+		return ProviderSpec{EnvKey: "GEMINI_API_KEY", Methods: []string{"key"}}, true
+	case agentkit.ProviderOpenAI:
+		return ProviderSpec{EnvKey: "OPENAI_API_KEY", Methods: []string{"sub", "key"}}, true
+	case agentkit.ProviderOpenRouter:
+		return ProviderSpec{EnvKey: "OPENROUTER_API_KEY", Methods: []string{"key"}}, true
+	case agentkit.ProviderXAI:
+		return ProviderSpec{EnvKey: "XAI_API_KEY", Methods: []string{"sub", "key"}}, true
+	case agentkit.ProviderZAI:
+		return ProviderSpec{EnvKey: "ZAI_API_KEY", Methods: []string{"key"}}, true
+	default:
+		return ProviderSpec{}, false
+	}
 }
 
 var (
@@ -83,12 +121,38 @@ func Load(cwd string, cliPairs []string, getenv func(string) string) (*Config, e
 	if c.Model.ModelID == "" {
 		c.Model.ModelID = defaultModel
 	}
-	resolution := catalog.Resolve(agentkit.ProviderID(c.Model.Provider), c.Model.ModelID)
+	provider := agentkit.ProviderID(c.Model.Provider)
+	resolution := catalog.Resolve(provider, c.Model.ModelID)
 	if resolution.Coverage == catalog.Unrouted {
-		return nil, fmt.Errorf("%w: unknown model %q", ErrConfig, c.Model.ModelID)
+		return nil, fmt.Errorf("%w: unknown model %q; set provider explicitly", ErrConfig, c.Model.ModelID)
 	}
 	c.Model.Provider = string(resolution.Provider)
+	info, ok := ProviderInfo(resolution.Provider)
+	if !ok {
+		return nil, fmt.Errorf("%w: unsupported provider %q", ErrConfig, resolution.Provider)
+	}
+	if c.Model.Auth == "" {
+		c.Model.Auth = info.Methods[0]
+	}
+	if c.Model.Auth != "key" && c.Model.Auth != "sub" {
+		return nil, fmt.Errorf("%w: invalid auth value %q", ErrConfig, c.Model.Auth)
+	}
+	if c.Model.Auth == "sub" && !slicesContains(info.Methods, "sub") {
+		return nil, fmt.Errorf("%w: provider %q is key-only", ErrConfig, resolution.Provider)
+	}
+	if c.Model.ProviderExplicit && resolution.Coverage == catalog.Passthru {
+		c.Warnings = append(c.Warnings, fmt.Sprintf("model %q has no pricing (cost reports 0), reasoning unchecked", c.Model.ModelID))
+	}
 	return c, nil
+}
+
+func slicesContains(values []string, want string) bool {
+	for _, value := range values {
+		if value == want {
+			return true
+		}
+	}
+	return false
 }
 
 func findFile(cwd string) (string, error) {
@@ -169,6 +233,8 @@ func decodeModel(data []byte, model *Model) error {
 		MaxElapsed       *string  `json:"max_elapsed"`
 		IgnoreRetryAfter *bool    `json:"ignore_retry_after"`
 		BaseURL          *string  `json:"base_url"`
+		Auth             *string  `json:"auth"`
+		AuthFile         *string  `json:"auth_file"`
 	}
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.DisallowUnknownFields()
@@ -183,7 +249,8 @@ func decodeModel(data []byte, model *Model) error {
 		modelPointer("thinking", values.Thinking), modelPointer("max_attempts", values.MaxAttempts),
 		modelPointer("base_delay", values.BaseDelay), modelPointer("max_delay", values.MaxDelay),
 		modelPointer("max_elapsed", values.MaxElapsed), modelPointer("ignore_retry_after", values.IgnoreRetryAfter),
-		modelPointer("base_url", values.BaseURL),
+		modelPointer("base_url", values.BaseURL), modelPointer("auth", values.Auth),
+		modelPointer("auth_file", values.AuthFile),
 	}
 	for _, item := range ordered {
 		if !item.present {
@@ -236,6 +303,7 @@ func applyModelValue(model *Model, key string, value any) error {
 			return errors.New("provider cannot be empty")
 		}
 		model.Provider = value.(string)
+		model.ProviderExplicit = true
 	case "model":
 		if value.(string) == "" {
 			return errors.New("model cannot be empty")
@@ -292,6 +360,10 @@ func applyModelValue(model *Model, key string, value any) error {
 		model.Retry.IgnoreRetryAfter = value.(bool)
 	case "base_url":
 		model.BaseURL = value.(string)
+	case "auth":
+		model.Auth = value.(string)
+	case "auth_file":
+		model.AuthFile = value.(string)
 	default:
 		return fmt.Errorf("unknown model key %q", key)
 	}
@@ -302,6 +374,7 @@ func resetModelValue(model *Model, key string) error {
 	switch key {
 	case "provider":
 		model.Provider = ""
+		model.ProviderExplicit = false
 	case "model":
 		model.ModelID = ""
 	case "temperature":
@@ -324,6 +397,10 @@ func resetModelValue(model *Model, key string) error {
 		model.Retry.IgnoreRetryAfter = false
 	case "base_url":
 		model.BaseURL = ""
+	case "auth":
+		model.Auth = ""
+	case "auth_file":
+		model.AuthFile = ""
 	default:
 		return fmt.Errorf("unknown model key %q", key)
 	}
@@ -335,18 +412,10 @@ func (c *Config) NewConversation(system string, log io.Writer) (*agentkit.Conver
 	if resolution.Coverage == catalog.Unrouted {
 		return nil, fmt.Errorf("%w: unknown model %q", ErrConfig, c.Model.ModelID)
 	}
-	envName, provider, err := c.provider(resolution.Provider)
+	provider, err := c.constructProvider(resolution.Provider)
 	if err != nil {
 		return nil, err
 	}
-	key := ""
-	if c.getenv != nil {
-		key = c.getenv(envName)
-	}
-	if key == "" {
-		return nil, fmt.Errorf("%w: missing %s", ErrAuth, envName)
-	}
-	provider = constructProvider(resolution.Provider, key, c.Model.BaseURL)
 	return &agentkit.Conversation{
 		Provider: provider,
 		Model:    resolution.WireModel,
@@ -358,26 +427,53 @@ func (c *Config) NewConversation(system string, log io.Writer) (*agentkit.Conver
 	}, nil
 }
 
-func (c *Config) provider(id agentkit.ProviderID) (string, agentkit.Provider, error) {
-	switch id {
-	case agentkit.ProviderGoogle:
-		return "GOOGLE_API_KEY", nil, nil
-	case agentkit.ProviderOpenAI:
-		return "OPENAI_API_KEY", nil, nil
-	case agentkit.ProviderAnthropic:
-		return "ANTHROPIC_API_KEY", nil, nil
-	case agentkit.ProviderOpenRouter:
-		return "OPENROUTER_API_KEY", nil, nil
-	case agentkit.ProviderXAI:
-		return "XAI_API_KEY", nil, nil
-	case agentkit.ProviderZAI:
-		return "ZAI_API_KEY", nil, nil
-	default:
-		return "", nil, fmt.Errorf("%w: unsupported provider %q", ErrConfig, id)
+func (c *Config) constructProvider(id agentkit.ProviderID) (agentkit.Provider, error) {
+	if c.Model.Auth == "sub" {
+		path := c.Model.AuthFile
+		if path == "" {
+			path = defaultAuthFile(c.getenv, id)
+		}
+		switch id {
+		case agentkit.ProviderOpenAI:
+			store, err := openaisub.Load(path)
+			if err != nil {
+				return nil, fmt.Errorf("%w: load %s: %v", ErrAuth, path, err)
+			}
+			return newOpenAI(openai.Subscription(store), c.Model.BaseURL), nil
+		case agentkit.ProviderXAI:
+			store, err := xaisub.Load(path)
+			if err != nil {
+				return nil, fmt.Errorf("%w: load %s: %v", ErrAuth, path, err)
+			}
+			return newXAI(xai.Subscription(store), c.Model.BaseURL), nil
+		default:
+			return nil, fmt.Errorf("%w: provider %q is key-only", ErrConfig, id)
+		}
 	}
+
+	info, ok := ProviderInfo(id)
+	if !ok {
+		return nil, fmt.Errorf("%w: unsupported provider %q", ErrConfig, id)
+	}
+	key := ""
+	if c.getenv != nil {
+		key = c.getenv(info.EnvKey)
+	}
+	if key == "" {
+		return nil, fmt.Errorf("%w: missing %s", ErrAuth, info.EnvKey)
+	}
+	return constructKeyProvider(id, key, c.Model.BaseURL), nil
 }
 
-func constructProvider(id agentkit.ProviderID, key, baseURL string) agentkit.Provider {
+func defaultAuthFile(getenv func(string) string, id agentkit.ProviderID) string {
+	home := ""
+	if getenv != nil {
+		home = getenv("HOME")
+	}
+	return filepath.Join(home, ".llm-lint", string(id)+"-auth.json")
+}
+
+func constructKeyProvider(id agentkit.ProviderID, key, baseURL string) agentkit.Provider {
 	switch id {
 	case agentkit.ProviderGoogle:
 		if baseURL != "" {
@@ -385,10 +481,7 @@ func constructProvider(id agentkit.ProviderID, key, baseURL string) agentkit.Pro
 		}
 		return google.New(google.APIKey(key))
 	case agentkit.ProviderOpenAI:
-		if baseURL != "" {
-			return openai.New(openai.APIKey(key), openai.WithBaseURL(baseURL))
-		}
-		return openai.New(openai.APIKey(key))
+		return newOpenAI(openai.APIKey(key), baseURL)
 	case agentkit.ProviderAnthropic:
 		if baseURL != "" {
 			return anthropic.New(anthropic.APIKey(key), anthropic.WithBaseURL(baseURL))
@@ -400,10 +493,7 @@ func constructProvider(id agentkit.ProviderID, key, baseURL string) agentkit.Pro
 		}
 		return openrouter.New(openrouter.APIKey(key))
 	case agentkit.ProviderXAI:
-		if baseURL != "" {
-			return xai.New(xai.APIKey(key), xai.WithBaseURL(baseURL))
-		}
-		return xai.New(xai.APIKey(key))
+		return newXAI(xai.APIKey(key), baseURL)
 	case agentkit.ProviderZAI:
 		if baseURL != "" {
 			return zai.New(zai.APIKey(key), zai.WithBaseURL(baseURL))
@@ -412,4 +502,18 @@ func constructProvider(id agentkit.ProviderID, key, baseURL string) agentkit.Pro
 	default:
 		return nil
 	}
+}
+
+func newOpenAI(credential openai.Credential, baseURL string) agentkit.Provider {
+	if baseURL != "" {
+		return openai.New(credential, openai.WithBaseURL(baseURL))
+	}
+	return openai.New(credential)
+}
+
+func newXAI(credential xai.Credential, baseURL string) agentkit.Provider {
+	if baseURL != "" {
+		return xai.New(credential, xai.WithBaseURL(baseURL))
+	}
+	return xai.New(credential)
 }
