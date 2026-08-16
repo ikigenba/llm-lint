@@ -5,4 +5,6 @@ status markers. The build loop finds its next work with
 `grep -nE '^- Phase .* ⬜' project/plan/STATUS.md | head -1` and reads only
 that phase's body file, deleting the line and the file on completion.
 
-Next phase: 28
+Next phase: 29
+
+- Phase 28 ⬜ realizes R-WBQM-PELO — print the bad-flag usage block exactly once
