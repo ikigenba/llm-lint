@@ -20,7 +20,7 @@ func TestRunVerboseJSONKeepsOutputStreamsSeparate(t *testing.T) {
 	if err := json.Unmarshal(out.Bytes(), &findings); err != nil || len(findings) != 1 {
 		t.Fatalf("stdout = %q, JSON error = %v; want one-finding array", out.String(), err)
 	}
-	wantTrace := "🔴 sample_test.go [no-sleep-in-tests]\n"
+	wantTrace := "🔴 [no-sleep-in-tests] sample_test.go\n"
 	if errOut.String() != wantTrace {
 		t.Fatalf("stderr = %q, want %q", errOut.String(), wantTrace)
 	}

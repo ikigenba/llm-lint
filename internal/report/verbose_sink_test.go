@@ -24,7 +24,7 @@ func TestVerboseSinkFormatsRelativePathAndSwallowsWriteErrors(t *testing.T) {
 	var got bytes.Buffer
 	sink := NewVerboseSink(&got, cwd, root)
 	sink.Add(engine.TraceEntry{File: "source.go", Rule: "audit", Cached: true, Outcome: "fail"})
-	if want := "🔴 ../source.go [audit]\n"; got.String() != want {
+	if want := "🔴 [audit] ../source.go\n"; got.String() != want {
 		t.Fatalf("VerboseSink output = %q, want %q", got.String(), want)
 	}
 
@@ -55,7 +55,7 @@ func TestVerboseSinkSerializesConcurrentLines(t *testing.T) {
 		seen[line] = true
 	}
 	for i := range count {
-		want := fmt.Sprintf("🟢 file-%02d.go [audit]", i)
+		want := fmt.Sprintf("🟢 [audit] file-%02d.go", i)
 		if !seen[want] {
 			t.Fatalf("VerboseSink output lacks complete line %q: %q", want, got.String())
 		}

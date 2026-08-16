@@ -101,10 +101,10 @@ func TestRunVerboseWritesPerPairTraceOnlyToStderr(t *testing.T) {
 		t.Fatalf("run() code = %d, stderr = %q", code, errOut.String())
 	}
 	wantTrace := []string{
-		"🟢 alpha_test.go [extra-audit]",
-		"🔴 alpha_test.go [no-sleep-in-tests]",
-		"🟢 beta_test.go [extra-audit]",
-		"🔴 beta_test.go [no-sleep-in-tests]",
+		"🟢 [extra-audit] alpha_test.go",
+		"🔴 [no-sleep-in-tests] alpha_test.go",
+		"🟢 [extra-audit] beta_test.go",
+		"🔴 [no-sleep-in-tests] beta_test.go",
 	}
 	gotTrace := strings.Split(strings.TrimSpace(errOut.String()), "\n")
 	sort.Strings(gotTrace)
