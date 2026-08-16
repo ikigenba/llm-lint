@@ -26,7 +26,7 @@ whenever a Decision is added or its Verification ids change.
 - D7 → `D07.md` — Inline suppression — R-H8SC-8KMV, R-HA08-MCDK,
   R-HB85-0449, R-HCG1-DVUY
 - D8 → `D08.md` — Reporting, formats, and exit computation — R-HDNX-RNLN,
-  R-HEVU-5FCC, R-HG3Q-J731, R-HHBM-WYTQ, R-H7O3-875F
+  R-HEVU-5FCC, R-HG3Q-J731, R-HHBM-WYTQ
 - D9 → `D09.md` — Built-in rule: no-sleep-in-tests — R-HIJJ-AQKF
 - D10 → `D10.md` — Release and installation — R-HJRF-OIB4, R-HKZC-2A1T
 - D11 → `D11.md` — Self-lint gate (dogfooding) — none — structural
@@ -83,7 +83,6 @@ whenever a Decision is added or its Verification ids change.
 - R-H58A-GNO1 — D6 (`D06.md`)
 - R-H6CJ-H15H — D6 (`D06.md`)
 - R-H6G6-UFEQ — D6 (`D06.md`)
-- R-H7O3-875F — D8 (`D08.md`)
 - R-H8SC-8KMV — D7 (`D07.md`)
 - R-HA08-MCDK — D7 (`D07.md`)
 - R-HB85-0449 — D7 (`D07.md`)
