@@ -19,8 +19,13 @@ type Finding struct {
 	Explanation string
 }
 
+type Usage struct {
+	Input, Output int64
+	CostUSD       float64
+}
+
 type Client interface {
-	Judge(ctx context.Context, r rules.Rule, file string, content []byte) ([]Finding, error)
+	Judge(ctx context.Context, r rules.Rule, file string, content []byte) ([]Finding, Usage, error)
 }
 
 type TraceEntry struct {
@@ -64,11 +69,6 @@ type Stats struct {
 	CostUSD                    float64
 }
 
-type OpFailure struct{ Err error }
-
-func (e *OpFailure) Error() string { return fmt.Sprintf("engine: operational failure: %v", e.Err) }
-func (e *OpFailure) Unwrap() error { return e.Err }
-
 func (e *Engine) Run(ctx context.Context, rs []rules.Rule, files map[string][]string, read func(path string) ([]byte, error), warn io.Writer) ([]Finding, Stats, error) {
 	if e.Client == nil {
 		panic("engine: nil Client")
@@ -103,6 +103,7 @@ func (e *Engine) Run(ctx context.Context, rs []rules.Rule, files map[string][]st
 	jobs := make(chan pair)
 	type result struct {
 		findings []Finding
+		usage    Usage
 		called   bool
 		err      error
 	}
@@ -119,21 +120,11 @@ func (e *Engine) Run(ctx context.Context, rs []rules.Rule, files map[string][]st
 					sendResult(runCtx, results, result{err: fmt.Errorf("read %s: %w", p.file, err)})
 					continue
 				}
-				if contextWindow, ok := e.Client.(interface{ ContextWindow() int64 }); ok {
-					budget := contextWindow.ContextWindow()
-					estimate := int64((len(content)+len(p.rule.Prompt)+2)/3 + 1024)
-					if budget > 0 && estimate > budget {
-						fmt.Fprintf(warn, "engine: skipping oversized file %s for rule %s\n", p.file, p.rule.ID)
-						e.Trace.Add(TraceEntry{File: p.file, Rule: p.rule.ID, Outcome: "skipped"})
-						sendResult(runCtx, results, result{})
-						continue
-					}
-				}
-				got, err := e.Client.Judge(runCtx, p.rule, p.file, content)
+				got, usage, err := e.Client.Judge(runCtx, p.rule, p.file, content)
 				if err != nil {
 					err = fmt.Errorf("rule %s file %s: %w", p.rule.ID, p.file, err)
 				}
-				sendResult(runCtx, results, result{findings: got, called: true, err: err})
+				sendResult(runCtx, results, result{findings: got, usage: usage, called: true, err: err})
 			}
 		}()
 	}
@@ -157,6 +148,9 @@ func (e *Engine) Run(ctx context.Context, rs []rules.Rule, files map[string][]st
 	for got := range results {
 		if got.called {
 			stats.Calls++
+			stats.InputTokens += got.usage.Input
+			stats.OutputTokens += got.usage.Output
+			stats.CostUSD += got.usage.CostUSD
 		}
 		if got.err != nil && firstErr == nil {
 			firstErr = got.err
@@ -167,7 +161,7 @@ func (e *Engine) Run(ctx context.Context, rs []rules.Rule, files map[string][]st
 		}
 	}
 	if firstErr != nil {
-		return nil, stats, &OpFailure{Err: firstErr}
+		return nil, stats, fmt.Errorf("engine: operational failure: %w", firstErr)
 	}
 	if err := ctx.Err(); err != nil {
 		return nil, stats, err

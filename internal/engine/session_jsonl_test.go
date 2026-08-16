@@ -25,7 +25,7 @@ func TestSessionJSONLContainsCallRecords(t *testing.T) {
 	client := AgentkitClient{Log: log, NewConversation: func(system string, writer io.Writer) (*agentkit.Conversation, error) {
 		return &agentkit.Conversation{Provider: provider, Model: "fake", System: system, Log: writer}, nil
 	}}
-	if _, err := client.Judge(t.Context(), rules.Rule{ID: "rule-log", Prompt: "judge"}, "logged.go", []byte("source")); err != nil {
+	if _, _, err := client.Judge(t.Context(), rules.Rule{ID: "rule-log", Prompt: "judge"}, "logged.go", []byte("source")); err != nil {
 		t.Fatal(err)
 	}
 	if err := log.Close(); err != nil {

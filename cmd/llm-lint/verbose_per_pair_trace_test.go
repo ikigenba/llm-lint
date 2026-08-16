@@ -17,13 +17,13 @@ type perPairClient struct {
 	mu sync.Mutex
 }
 
-func (c *perPairClient) Judge(_ context.Context, rule rules.Rule, file string, _ []byte) ([]engine.Finding, error) {
+func (c *perPairClient) Judge(_ context.Context, rule rules.Rule, file string, _ []byte) ([]engine.Finding, engine.Usage, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if rule.ID != "no-sleep-in-tests" {
-		return nil, nil
+		return nil, engine.Usage{}, nil
 	}
-	return []engine.Finding{{Rule: rule.ID, Severity: rule.Severity, File: file, Line: 1, Evidence: "source", Explanation: "found issue"}}, nil
+	return []engine.Finding{{Rule: rule.ID, Severity: rule.Severity, File: file, Line: 1, Evidence: "source", Explanation: "found issue"}}, engine.Usage{}, nil
 }
 
 func verboseLintTree(t *testing.T) (string, string) {

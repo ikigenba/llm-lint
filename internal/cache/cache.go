@@ -35,7 +35,7 @@ type CachingClient struct {
 	warnOnce  sync.Once
 }
 
-func (c *CachingClient) Judge(ctx context.Context, r rules.Rule, file string, content []byte) ([]engine.Finding, error) {
+func (c *CachingClient) Judge(ctx context.Context, r rules.Rule, file string, content []byte) ([]engine.Finding, engine.Usage, error) {
 	if c.Store == nil {
 		return c.judgeNext(ctx, r, file, content)
 	}
@@ -70,26 +70,26 @@ func (c *CachingClient) Judge(ctx context.Context, r rules.Rule, file string, co
 				c.Hits.Add(1)
 			}
 			c.record(file, r.ID, findings, true)
-			return findings, nil
+			return findings, engine.Usage{}, nil
 		}
 	}
 
-	findings, err := c.judgeNext(ctx, r, file, content)
+	findings, usage, err := c.judgeNext(ctx, r, file, content)
 	if err != nil {
-		return nil, err
+		return nil, usage, err
 	}
 	if err := write(path, findings); err != nil {
 		c.warn(err)
 	}
-	return findings, nil
+	return findings, usage, nil
 }
 
-func (c *CachingClient) judgeNext(ctx context.Context, r rules.Rule, file string, content []byte) ([]engine.Finding, error) {
-	findings, err := c.Next.Judge(ctx, r, file, content)
+func (c *CachingClient) judgeNext(ctx context.Context, r rules.Rule, file string, content []byte) ([]engine.Finding, engine.Usage, error) {
+	findings, usage, err := c.Next.Judge(ctx, r, file, content)
 	if err == nil {
 		c.record(file, r.ID, findings, false)
 	}
-	return findings, err
+	return findings, usage, err
 }
 
 func (c *CachingClient) record(file, rule string, findings []engine.Finding, cached bool) {

@@ -30,7 +30,7 @@ func TestNormalRunPrunesOldEntriesAndKeepsYoung(t *testing.T) {
 	}
 
 	client := &CachingClient{Store: &Store{Dir: dir, Now: func() time.Time { return now }}, Next: &fakeClient{}}
-	if _, err := client.Judge(context.Background(), testRule("one", "check"), "a.go", []byte("content")); err != nil {
+	if _, _, err := client.Judge(context.Background(), testRule("one", "check"), "a.go", []byte("content")); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Stat(old); !os.IsNotExist(err) {

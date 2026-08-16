@@ -15,12 +15,13 @@ import (
 type fakeClient struct {
 	findings []engine.Finding
 	err      error
+	usage    engine.Usage
 	calls    int
 }
 
-func (f *fakeClient) Judge(context.Context, rules.Rule, string, []byte) ([]engine.Finding, error) {
+func (f *fakeClient) Judge(context.Context, rules.Rule, string, []byte) ([]engine.Finding, engine.Usage, error) {
 	f.calls++
-	return f.findings, f.err
+	return f.findings, f.usage, f.err
 }
 
 func bindClient(t *testing.T, client engine.Client) {

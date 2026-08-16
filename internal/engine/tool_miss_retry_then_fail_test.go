@@ -15,7 +15,7 @@ func TestAgentkitClientRetriesToolMissOnceThenNamesPair(t *testing.T) {
 	client := AgentkitClient{NewConversation: func(system string, log io.Writer) (*agentkit.Conversation, error) {
 		return &agentkit.Conversation{Provider: provider, Model: "fake", System: system, Log: log}, nil
 	}}
-	_, err := client.Judge(t.Context(), rules.Rule{ID: "rule-x"}, "file.go", []byte("package p"))
+	_, _, err := client.Judge(t.Context(), rules.Rule{ID: "rule-x"}, "file.go", []byte("package p"))
 	if err == nil || !strings.Contains(err.Error(), "rule-x") || !strings.Contains(err.Error(), "file.go") {
 		t.Fatalf("error = %v, want operational detail naming rule and file", err)
 	}

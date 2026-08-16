@@ -82,10 +82,6 @@ func Verbose(w io.Writer, cwd, root string, entries []engine.TraceEntry) {
 		if rel, err := filepath.Rel(cwd, path); err == nil {
 			name = rel
 		}
-		if entry.Outcome == "skipped" {
-			fmt.Fprintf(w, "%s: %s skipped\n", name, entry.Rule)
-			continue
-		}
 		cacheStatus := "miss"
 		if entry.Cached {
 			cacheStatus = "hit"

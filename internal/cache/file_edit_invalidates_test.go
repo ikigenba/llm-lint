@@ -12,7 +12,7 @@ func TestFileEditInvalidatesOnlyEditedFile(t *testing.T) {
 	rule := testRule("one", "check")
 	warm := &CachingClient{Store: &Store{Dir: dir}, Next: &fakeClient{}}
 	for _, file := range []struct{ name, content string }{{"a.go", "old a"}, {"b.go", "same b"}} {
-		if _, err := warm.Judge(context.Background(), rule, file.name, []byte(file.content)); err != nil {
+		if _, _, err := warm.Judge(context.Background(), rule, file.name, []byte(file.content)); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -20,7 +20,7 @@ func TestFileEditInvalidatesOnlyEditedFile(t *testing.T) {
 	next := &fakeClient{}
 	cached := &CachingClient{Store: &Store{Dir: dir}, Next: next}
 	for _, file := range []struct{ name, content string }{{"a.go", "new a"}, {"b.go", "same b"}} {
-		if _, err := cached.Judge(context.Background(), rule, file.name, []byte(file.content)); err != nil {
+		if _, _, err := cached.Judge(context.Background(), rule, file.name, []byte(file.content)); err != nil {
 			t.Fatal(err)
 		}
 	}

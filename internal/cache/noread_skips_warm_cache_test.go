@@ -13,13 +13,13 @@ func TestNoReadSkipsWarmCacheButWrites(t *testing.T) {
 	dir := t.TempDir()
 	rule := testRule("one", "check")
 	warm := &CachingClient{Store: &Store{Dir: dir}, Next: &fakeClient{findings: []engine.Finding{{Evidence: "old"}}}}
-	if _, err := warm.Judge(context.Background(), rule, "a.go", []byte("same")); err != nil {
+	if _, _, err := warm.Judge(context.Background(), rule, "a.go", []byte("same")); err != nil {
 		t.Fatal(err)
 	}
 
 	refreshNext := &fakeClient{findings: []engine.Finding{{Evidence: "new"}}}
 	refresh := &CachingClient{Store: &Store{Dir: dir}, Next: refreshNext, NoRead: true}
-	if _, err := refresh.Judge(context.Background(), rule, "a.go", []byte("same")); err != nil {
+	if _, _, err := refresh.Judge(context.Background(), rule, "a.go", []byte("same")); err != nil {
 		t.Fatal(err)
 	}
 	if len(refreshNext.calls) != 1 {
@@ -28,7 +28,7 @@ func TestNoReadSkipsWarmCacheButWrites(t *testing.T) {
 
 	next := &fakeClient{}
 	normal := &CachingClient{Store: &Store{Dir: dir}, Next: next}
-	got, err := normal.Judge(context.Background(), rule, "a.go", []byte("same"))
+	got, _, err := normal.Judge(context.Background(), rule, "a.go", []byte("same"))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -17,18 +17,15 @@ type AgentkitClient struct {
 	NewConversation func(system string, log io.Writer) (*agentkit.Conversation, error)
 	Log             io.Writer
 	Warn            io.Writer
-	Context         int64
 }
 
-func (c *AgentkitClient) ContextWindow() int64 { return c.Context }
-
-func (c *AgentkitClient) Judge(ctx context.Context, rule rules.Rule, file string, content []byte) ([]Finding, error) {
+func (c *AgentkitClient) Judge(ctx context.Context, rule rules.Rule, file string, content []byte) ([]Finding, Usage, error) {
 	if c.NewConversation == nil {
 		panic("engine: AgentkitClient has nil NewConversation")
 	}
 	conversation, err := c.NewConversation(judgeSystemPrompt, c.Log)
 	if err != nil {
-		return nil, fmt.Errorf("engine: create conversation: %w", err)
+		return nil, Usage{}, fmt.Errorf("engine: create conversation: %w", err)
 	}
 	defer conversation.Close()
 
@@ -53,6 +50,7 @@ func (c *AgentkitClient) Judge(ctx context.Context, rule rules.Rule, file string
 	))
 
 	userText := formatJudgeRequest(rule, file, content)
+	var usage Usage
 	for attempt := 0; attempt < 2; attempt++ {
 		if attempt == 1 {
 			userText = "You did not call report_violations. Call it exactly once now, using an empty violations array if the file is clean."
@@ -61,14 +59,18 @@ func (c *AgentkitClient) Judge(ctx context.Context, rule rules.Rule, file string
 		for range stream.Events() {
 		}
 		if err := stream.Err(); err != nil {
-			return nil, fmt.Errorf("engine: judge rule %s file %s: %w", rule.ID, file, err)
+			return nil, Usage{}, fmt.Errorf("engine: judge rule %s file %s: %w", rule.ID, file, err)
 		}
+		streamUsage := stream.Usage()
+		usage.Input += streamUsage.InputUncached + streamUsage.CacheReadInput + streamUsage.CacheWriteInput
+		usage.Output += streamUsage.Output + streamUsage.ReasoningOutput
+		usage.CostUSD += stream.Cost().USD()
 		if toolCalls > 0 {
 			break
 		}
 	}
 	if toolCalls == 0 {
-		return nil, fmt.Errorf("engine: judge rule %s file %s: report_violations was not called after retry", rule.ID, file)
+		return nil, Usage{}, fmt.Errorf("engine: judge rule %s file %s: report_violations was not called after retry", rule.ID, file)
 	}
 
 	lines := sourceLines(content)
@@ -89,7 +91,7 @@ func (c *AgentkitClient) Judge(ctx context.Context, rule rules.Rule, file string
 			Explanation: item.Explanation,
 		})
 	}
-	return findings, nil
+	return findings, usage, nil
 }
 
 func formatJudgeRequest(rule rules.Rule, file string, content []byte) string {

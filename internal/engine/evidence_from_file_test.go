@@ -32,7 +32,7 @@ func TestAgentkitClientUsesActualSourceEvidenceAndDropsBeyondEOF(t *testing.T) {
 		Warn: &warning,
 	}
 	rule := rules.Rule{ID: "bad-api", Severity: rules.SeverityWarning, Prompt: "flag bad calls"}
-	findings, err := client.Judge(t.Context(), rule, "main.go", []byte("first\nactual second\n"))
+	findings, _, err := client.Judge(t.Context(), rule, "main.go", []byte("first\nactual second\n"))
 	if err != nil {
 		t.Fatal(err)
 	}

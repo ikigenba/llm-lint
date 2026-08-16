@@ -9,9 +9,9 @@ import (
 	"github.com/ikigenba/llm-lint/internal/rules"
 )
 
-type judgeFunc func(context.Context, rules.Rule, string, []byte) ([]Finding, error)
+type judgeFunc func(context.Context, rules.Rule, string, []byte) ([]Finding, Usage, error)
 
-func (f judgeFunc) Judge(ctx context.Context, rule rules.Rule, file string, content []byte) ([]Finding, error) {
+func (f judgeFunc) Judge(ctx context.Context, rule rules.Rule, file string, content []byte) ([]Finding, Usage, error) {
 	return f(ctx, rule, file, content)
 }
 
@@ -19,11 +19,11 @@ func TestRunJudgesEveryRuleFilePairOnce(t *testing.T) {
 	// R-GRPQ-VS95
 	var mu sync.Mutex
 	calls := make(map[string]int)
-	client := judgeFunc(func(_ context.Context, rule rules.Rule, file string, _ []byte) ([]Finding, error) {
+	client := judgeFunc(func(_ context.Context, rule rules.Rule, file string, _ []byte) ([]Finding, Usage, error) {
 		mu.Lock()
 		calls[rule.ID+"/"+file]++
 		mu.Unlock()
-		return nil, nil
+		return nil, Usage{}, nil
 	})
 	rs := []rules.Rule{{ID: "one"}, {ID: "two"}}
 	files := map[string][]string{"one": {"a.go", "b.go"}, "two": {"a.go", "b.go"}}

@@ -13,7 +13,7 @@ func TestRuleEditInvalidatesOnlyEditedRule(t *testing.T) {
 	warmNext := &fakeClient{}
 	warm := &CachingClient{Store: &Store{Dir: dir}, Next: warmNext}
 	for _, rule := range rulesBefore {
-		if _, err := warm.Judge(context.Background(), testRule(rule.id, rule.prompt), "a.go", []byte("same")); err != nil {
+		if _, _, err := warm.Judge(context.Background(), testRule(rule.id, rule.prompt), "a.go", []byte("same")); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -21,7 +21,7 @@ func TestRuleEditInvalidatesOnlyEditedRule(t *testing.T) {
 	next := &fakeClient{}
 	cached := &CachingClient{Store: &Store{Dir: dir}, Next: next}
 	for _, rule := range []struct{ id, prompt string }{{"one", "first"}, {"two", "edited"}} {
-		if _, err := cached.Judge(context.Background(), testRule(rule.id, rule.prompt), "a.go", []byte("same")); err != nil {
+		if _, _, err := cached.Judge(context.Background(), testRule(rule.id, rule.prompt), "a.go", []byte("same")); err != nil {
 			t.Fatal(err)
 		}
 	}

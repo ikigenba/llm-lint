@@ -16,7 +16,7 @@ func TestTraceRecordsRawVerdictOutcome(t *testing.T) {
 	finding := engine.Finding{Rule: rule.ID, Severity: rules.SeverityError, File: "ignored.go", Line: 1}
 	trace := &engine.Trace{}
 	failing := &CachingClient{Store: &Store{Dir: t.TempDir()}, Next: &fakeClient{findings: []engine.Finding{finding}}, Trace: trace}
-	got, err := failing.Judge(context.Background(), rule, finding.File, []byte("work() // llm-lint:ignore target-rule\n"))
+	got, _, err := failing.Judge(context.Background(), rule, finding.File, []byte("work() // llm-lint:ignore target-rule\n"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,7 +28,7 @@ func TestTraceRecordsRawVerdictOutcome(t *testing.T) {
 	}
 
 	clean := &CachingClient{Store: &Store{Dir: t.TempDir()}, Next: &fakeClient{}, Trace: trace}
-	if _, err := clean.Judge(context.Background(), rule, "clean.go", []byte("work()\n")); err != nil {
+	if _, _, err := clean.Judge(context.Background(), rule, "clean.go", []byte("work()\n")); err != nil {
 		t.Fatal(err)
 	}
 	want := []engine.TraceEntry{
