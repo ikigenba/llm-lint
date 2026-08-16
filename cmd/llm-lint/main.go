@@ -45,7 +45,7 @@ var newClient = func(cfg *config.Config, errOut io.Writer) (engine.Client, error
 
 func usage(w io.Writer) {
 	fmt.Fprintln(w, "Usage: llm-lint [options] [path...]")
-	fmt.Fprintln(w, "Options: -c key=value, --rules path, --model id, --format text|json, --concurrency N, --no-cache, --stats, --list-rules, --version, --help")
+	fmt.Fprintln(w, "Options: -c key=value, --rules path, --model id, --format text|json, --concurrency N, --no-cache, --stats, --list-rules, -V, --version, --help")
 }
 
 func run(args []string, in io.Reader, out, errOut io.Writer, getenv func(string) string, cwd string) int {
@@ -64,6 +64,7 @@ func run(args []string, in io.Reader, out, errOut io.Writer, getenv func(string)
 	fs.BoolVar(&noCache, "no-cache", false, "skip cache reads")
 	fs.BoolVar(&statsFlag, "stats", false, "print run statistics")
 	fs.BoolVar(&listRules, "list-rules", false, "list known rules")
+	fs.BoolVar(&versionFlag, "V", false, "print version")
 	fs.BoolVar(&versionFlag, "version", false, "print version")
 	fs.BoolVar(&help, "help", false, "print help")
 	if err := fs.Parse(args); err != nil {

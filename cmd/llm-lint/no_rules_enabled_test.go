@@ -8,8 +8,8 @@ import (
 	"testing"
 )
 
-// R-GHYJ-TMBL
-func TestRunWithNoEnabledRulesWarnsAndSucceeds(t *testing.T) {
+// R-2P4O-HGWM
+func TestRunWithEveryActiveRuleDisabledWarnsAndSucceeds(t *testing.T) {
 	client := &fakeClient{}
 	bindClient(t, client)
 	dir := t.TempDir()
