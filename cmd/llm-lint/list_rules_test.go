@@ -13,7 +13,7 @@ func TestRunListRulesDescribesKnownRulesWithoutInference(t *testing.T) {
 	var out, errOut bytes.Buffer
 	code := run([]string{"--list-rules"}, bytes.NewReader(nil), &out, &errOut, noEnv, t.TempDir())
 	line := strings.TrimSpace(out.String())
-	for _, field := range []string{"no-sleep-in-tests", "error", "disabled", "fixed-duration sleeps"} {
+	for _, field := range []string{"no-sleep-in-tests", "error", "enabled", "fixed-duration sleeps"} {
 		if !strings.Contains(line, field) {
 			t.Fatalf("rule listing %q does not contain %q", line, field)
 		}
@@ -27,7 +27,7 @@ func TestRunListRulesDescribesKnownRulesWithoutInference(t *testing.T) {
 func TestRunListRulesIncludesNoSleepInTests(t *testing.T) {
 	var out, errOut bytes.Buffer
 	code := run([]string{"--list-rules"}, bytes.NewReader(nil), &out, &errOut, noEnv, t.TempDir())
-	if code != 0 || !strings.Contains(out.String(), "no-sleep-in-tests\terror\tdisabled\t") {
+	if code != 0 || !strings.Contains(out.String(), "no-sleep-in-tests\terror\tenabled\t") {
 		t.Fatalf("run(--list-rules) = %d, output %q; want embedded no-sleep-in-tests listing", code, out.String())
 	}
 }

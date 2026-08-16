@@ -170,20 +170,40 @@ func Load(root string, paths []string) ([]Rule, error) {
 	return loaded, nil
 }
 
-func Select(all []Rule, enable []string) ([]Rule, error) {
+func Select(all []Rule, enable, disable []string) ([]Rule, error) {
 	known := make(map[string]Rule, len(all))
 	for _, rule := range all {
 		known[rule.ID] = rule
 	}
-	selected := make([]Rule, 0, len(enable))
-	for _, id := range enable {
-		rule, ok := known[id]
-		if !ok {
-			return nil, ruleError(id, "unknown enabled rule")
+
+	selected := make([]Rule, 0, len(all))
+	if len(enable) == 0 {
+		selected = append(selected, all...)
+	} else {
+		selected = make([]Rule, 0, len(enable))
+		for _, id := range enable {
+			rule, ok := known[id]
+			if !ok {
+				return nil, ruleError(id, "unknown enabled rule")
+			}
+			selected = append(selected, rule)
 		}
-		selected = append(selected, rule)
 	}
-	return selected, nil
+
+	disabled := make(map[string]bool, len(disable))
+	for _, id := range disable {
+		if _, ok := known[id]; !ok {
+			return nil, ruleError(id, "unknown disabled rule")
+		}
+		disabled[id] = true
+	}
+	active := selected[:0]
+	for _, rule := range selected {
+		if !disabled[rule.ID] {
+			active = append(active, rule)
+		}
+	}
+	return active, nil
 }
 
 func parseStringArray(value string, target *[]string) error {

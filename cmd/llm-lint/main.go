@@ -106,7 +106,7 @@ func run(args []string, in io.Reader, out, errOut io.Writer, getenv func(string)
 		return 2
 	}
 	allRules = append(allRules, localRules...)
-	selected, err := rules.Select(allRules, cfg.Enable)
+	selected, err := rules.Select(allRules, cfg.Enable, cfg.Disable)
 	if err != nil {
 		fmt.Fprintf(errOut, "llm-lint: %v\n", err)
 		return 2
