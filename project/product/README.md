@@ -78,7 +78,7 @@ repeatable, and conventional, not to guarantee a perfect verdict.
   suppression comments — this is also how build loops override a false
   positive.
 - Re-running on an unchanged tree is fast and spends nothing: verdicts are
-  remembered per file/rule/model content, and only what changed is re-judged.
+  remembered per file and rule content, and only what changed is re-judged.
 - With a provider API key in the environment it works out of the box on the
   default model; the model and its generation settings are configurable per
   project and per invocation.

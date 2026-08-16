@@ -5,4 +5,6 @@ status markers. The build loop finds its next work with
 `grep -nE '^- Phase .* ⬜' project/plan/STATUS.md | head -1` and reads only
 that phase's body file, deleting the line and the file on completion.
 
-Next phase: 15
+Next phase: 16
+
+- Phase 15 ⬜ realizes — drop the model from the cache key
