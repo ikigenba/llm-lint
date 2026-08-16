@@ -16,3 +16,23 @@ func TestRunUnknownFlagPrintsUsageToStderrAndReturnsTwo(t *testing.T) {
 		}
 	}
 }
+
+// R-WBQM-PELO
+func TestRunUnknownFlagPrintsUsageExactlyOnceAfterFlagError(t *testing.T) {
+	var out, errOut bytes.Buffer
+	code := run([]string{"--not-a-flag"}, bytes.NewReader(nil), &out, &errOut, noEnv, t.TempDir())
+
+	const flagError = "flag provided but not defined: -not-a-flag"
+	const usageLine = "Usage: llm-lint"
+	stderr := errOut.String()
+	if code != 2 {
+		t.Errorf("run() code = %d; want 2", code)
+	}
+	if count := strings.Count(stderr, usageLine); count != 1 {
+		t.Errorf("stderr contains %q %d times; want exactly once; stderr %q", usageLine, count, stderr)
+	}
+	errorAt, usageAt := strings.Index(stderr, flagError), strings.Index(stderr, usageLine)
+	if errorAt < 0 || usageAt < 0 || errorAt >= usageAt {
+		t.Errorf("stderr = %q; want flag error before usage", stderr)
+	}
+}

@@ -149,7 +149,6 @@ func run(args []string, in io.Reader, out, errOut io.Writer, getenv func(string)
 	fs.BoolVar(&versionFlag, "version", false, "print version")
 	fs.BoolVar(&help, "help", false, "print help")
 	if err := fs.Parse(args); err != nil {
-		usage(errOut)
 		return 2
 	}
 	_ = in
