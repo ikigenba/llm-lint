@@ -29,6 +29,7 @@ type CachingClient struct {
 	Next   engine.Client
 	NoRead bool
 	Hits   *atomic.Int64
+	Trace  *engine.Trace
 
 	pruneOnce sync.Once
 	warnOnce  sync.Once
@@ -36,12 +37,12 @@ type CachingClient struct {
 
 func (c *CachingClient) Judge(ctx context.Context, r rules.Rule, file string, content []byte) ([]engine.Finding, error) {
 	if c.Store == nil {
-		return c.Next.Judge(ctx, r, file, content)
+		return c.judgeNext(ctx, r, file, content)
 	}
 
 	dir := c.Store.dir()
 	if dir == "" {
-		return c.Next.Judge(ctx, r, file, content)
+		return c.judgeNext(ctx, r, file, content)
 	}
 	now := c.Store.now()
 	c.pruneOnce.Do(func() {
@@ -52,7 +53,7 @@ func (c *CachingClient) Judge(ctx context.Context, r rules.Rule, file string, co
 
 	ruleContent, err := json.Marshal(r)
 	if err != nil {
-		return c.Next.Judge(ctx, r, file, content)
+		return c.judgeNext(ctx, r, file, content)
 	}
 	key := Key(ruleContent, content)
 	path := filepath.Join(dir, key[:2], key+".json")
@@ -68,11 +69,12 @@ func (c *CachingClient) Judge(ctx context.Context, r rules.Rule, file string, co
 			if c.Hits != nil {
 				c.Hits.Add(1)
 			}
+			c.record(file, r.ID, findings, true)
 			return findings, nil
 		}
 	}
 
-	findings, err := c.Next.Judge(ctx, r, file, content)
+	findings, err := c.judgeNext(ctx, r, file, content)
 	if err != nil {
 		return nil, err
 	}
@@ -80,6 +82,22 @@ func (c *CachingClient) Judge(ctx context.Context, r rules.Rule, file string, co
 		c.warn(err)
 	}
 	return findings, nil
+}
+
+func (c *CachingClient) judgeNext(ctx context.Context, r rules.Rule, file string, content []byte) ([]engine.Finding, error) {
+	findings, err := c.Next.Judge(ctx, r, file, content)
+	if err == nil {
+		c.record(file, r.ID, findings, false)
+	}
+	return findings, err
+}
+
+func (c *CachingClient) record(file, rule string, findings []engine.Finding, cached bool) {
+	outcome := "pass"
+	if len(findings) > 0 {
+		outcome = "fail"
+	}
+	c.Trace.Add(engine.TraceEntry{File: file, Rule: rule, Cached: cached, Outcome: outcome})
 }
 
 func (c *CachingClient) warn(err error) {

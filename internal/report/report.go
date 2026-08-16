@@ -65,6 +65,35 @@ func StatsLine(w io.Writer, s Stats) {
 	fmt.Fprintf(w, "llm-lint: %d rules, %d files, %d pairs, %d calls, %d cache hits, %s in / %s out tokens, $%.4f\n", s.Rules, s.Files, s.Pairs, s.Calls, s.CacheHits, tokenCount(s.InputTokens), tokenCount(s.OutputTokens), s.CostUSD)
 }
 
+func Verbose(w io.Writer, cwd, root string, entries []engine.TraceEntry) {
+	ordered := append([]engine.TraceEntry(nil), entries...)
+	sort.SliceStable(ordered, func(i, j int) bool {
+		if ordered[i].File != ordered[j].File {
+			return ordered[i].File < ordered[j].File
+		}
+		return ordered[i].Rule < ordered[j].Rule
+	})
+	for _, entry := range ordered {
+		name := entry.File
+		path := entry.File
+		if !filepath.IsAbs(path) {
+			path = filepath.Join(root, filepath.FromSlash(path))
+		}
+		if rel, err := filepath.Rel(cwd, path); err == nil {
+			name = rel
+		}
+		if entry.Outcome == "skipped" {
+			fmt.Fprintf(w, "%s: %s skipped\n", name, entry.Rule)
+			continue
+		}
+		cacheStatus := "miss"
+		if entry.Cached {
+			cacheStatus = "hit"
+		}
+		fmt.Fprintf(w, "%s: %s %s %s\n", name, entry.Rule, cacheStatus, entry.Outcome)
+	}
+}
+
 func sorted(findings []engine.Finding) []engine.Finding {
 	ordered := append([]engine.Finding(nil), findings...)
 	sort.SliceStable(ordered, func(i, j int) bool {

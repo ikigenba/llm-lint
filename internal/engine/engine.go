@@ -23,9 +23,39 @@ type Client interface {
 	Judge(ctx context.Context, r rules.Rule, file string, content []byte) ([]Finding, error)
 }
 
+type TraceEntry struct {
+	File, Rule string
+	Cached     bool
+	Outcome    string
+}
+
+type Trace struct {
+	mu      sync.Mutex
+	entries []TraceEntry
+}
+
+func (t *Trace) Add(entry TraceEntry) {
+	if t == nil {
+		return
+	}
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.entries = append(t.entries, entry)
+}
+
+func (t *Trace) Entries() []TraceEntry {
+	if t == nil {
+		return nil
+	}
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return append([]TraceEntry(nil), t.entries...)
+}
+
 type Engine struct {
 	Client      Client
 	Concurrency int
+	Trace       *Trace
 }
 
 type Stats struct {
@@ -94,6 +124,7 @@ func (e *Engine) Run(ctx context.Context, rs []rules.Rule, files map[string][]st
 					estimate := int64((len(content)+len(p.rule.Prompt)+2)/3 + 1024)
 					if budget > 0 && estimate > budget {
 						fmt.Fprintf(warn, "engine: skipping oversized file %s for rule %s\n", p.file, p.rule.ID)
+						e.Trace.Add(TraceEntry{File: p.file, Rule: p.rule.ID, Outcome: "skipped"})
 						sendResult(runCtx, results, result{})
 						continue
 					}

@@ -47,7 +47,7 @@ var newClient = func(cfg *config.Config, errOut io.Writer) (engine.Client, error
 
 func usage(w io.Writer) {
 	fmt.Fprintln(w, "Usage: llm-lint [options] [path...]")
-	fmt.Fprintln(w, "Options: -c key=value, --rules path, --format text|json, --concurrency N, --no-cache, --stats, --list-rules, -V, --version, --help")
+	fmt.Fprintln(w, "Options: -c key=value, --rules path, --format text|json, --concurrency N, --no-cache, --stats, --verbose, --list-rules, -V, --version, --help")
 }
 
 func printHelp(w io.Writer) {
@@ -136,13 +136,14 @@ func run(args []string, in io.Reader, out, errOut io.Writer, getenv func(string)
 	var overrides, rulePaths stringList
 	var format string
 	var concurrency int
-	var noCache, statsFlag, listRules, versionFlag, help bool
+	var noCache, statsFlag, verbose, listRules, versionFlag, help bool
 	fs.Var(&overrides, "c", "config override key=value (repeatable)")
 	fs.Var(&rulePaths, "rules", "additional rule file or directory (repeatable)")
 	fs.StringVar(&format, "format", "text", "output format: text or json")
 	fs.IntVar(&concurrency, "concurrency", 8, "maximum in-flight inference calls")
 	fs.BoolVar(&noCache, "no-cache", false, "skip cache reads")
 	fs.BoolVar(&statsFlag, "stats", false, "print run statistics")
+	fs.BoolVar(&verbose, "verbose", false, "print per-pair audit trace")
 	fs.BoolVar(&listRules, "list-rules", false, "list known rules")
 	fs.BoolVar(&versionFlag, "V", false, "print version")
 	fs.BoolVar(&versionFlag, "version", false, "print version")
@@ -231,8 +232,12 @@ func run(args []string, in io.Reader, out, errOut io.Writer, getenv func(string)
 		return 3
 	}
 	var hits atomic.Int64
-	client = &cache.CachingClient{Store: &cache.Store{}, Next: client, NoRead: noCache, Hits: &hits}
-	runner := &engine.Engine{Client: client, Concurrency: concurrency}
+	var trace *engine.Trace
+	if verbose {
+		trace = &engine.Trace{}
+	}
+	client = &cache.CachingClient{Store: &cache.Store{}, Next: client, NoRead: noCache, Hits: &hits, Trace: trace}
+	runner := &engine.Engine{Client: client, Concurrency: concurrency, Trace: trace}
 	readFile := func(name string) ([]byte, error) {
 		if !filepath.IsAbs(name) {
 			name = filepath.Join(cfg.Root, filepath.FromSlash(name))
@@ -257,6 +262,9 @@ func run(args []string, in io.Reader, out, errOut io.Writer, getenv func(string)
 	if err != nil {
 		fmt.Fprintf(errOut, "llm-lint: %v\n", err)
 		return 3
+	}
+	if verbose {
+		report.Verbose(errOut, cwd, cfg.Root, trace.Entries())
 	}
 	if statsFlag {
 		report.StatsLine(errOut, report.Stats{Rules: engineStats.Rules, Files: engineStats.Files, Pairs: engineStats.Pairs, Calls: engineStats.Calls, CacheHits: int(hits.Load()), InputTokens: engineStats.InputTokens, OutputTokens: engineStats.OutputTokens, CostUSD: engineStats.CostUSD})
