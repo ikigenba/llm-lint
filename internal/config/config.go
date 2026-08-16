@@ -27,6 +27,7 @@ const defaultModel = "gemini-3.7-flash"
 type Config struct {
 	Root    string
 	Enable  []string
+	Disable []string
 	Rules   []string
 	Exclude []string
 	Model   Model
@@ -52,6 +53,7 @@ var (
 
 type fileConfig struct {
 	Enable  []string        `json:"enable"`
+	Disable json.RawMessage `json:"disable"`
 	Rules   []string        `json:"rules"`
 	Exclude []string        `json:"exclude"`
 	Model   json.RawMessage `json:"model"`
@@ -126,6 +128,11 @@ func loadFile(name string, c *Config) error {
 		return fmt.Errorf("%w: %s: %v", ErrConfig, name, err)
 	}
 	c.Enable, c.Rules, c.Exclude = raw.Enable, raw.Rules, raw.Exclude
+	if len(raw.Disable) != 0 {
+		if string(raw.Disable) == "null" || json.Unmarshal(raw.Disable, &c.Disable) != nil {
+			return fmt.Errorf("%w: %s: disable must be an array of strings", ErrConfig, name)
+		}
+	}
 	if len(raw.Model) != 0 && string(raw.Model) != "null" {
 		if err := decodeModel(raw.Model, &c.Model); err != nil {
 			return fmt.Errorf("%w: %s: %v", ErrConfig, name, err)

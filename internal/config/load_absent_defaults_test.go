@@ -9,8 +9,8 @@ func TestLoadAbsentConfigUsesDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cfg.Root != cwd || len(cfg.Enable) != 0 {
-		t.Fatalf("Root = %q, Enable = %#v", cfg.Root, cfg.Enable)
+	if cfg.Root != cwd || len(cfg.Enable) != 0 || len(cfg.Disable) != 0 {
+		t.Fatalf("Root = %q, Enable = %#v, Disable = %#v", cfg.Root, cfg.Enable, cfg.Disable)
 	}
 	if cfg.Model.ModelID != defaultModel {
 		t.Fatalf("ModelID = %q, want %q", cfg.Model.ModelID, defaultModel)
