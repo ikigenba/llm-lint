@@ -1,9 +1,10 @@
 # llm-lint — Research
 
 Non-contractual ground truth gathered so design does not re-derive it. All
-facts below were read from the named sources on 2026-08-15.
+facts below were read from the named sources on 2026-08-15, and refreshed
+against agentkit v0.22.0 on 2026-08-16.
 
-## agentkit (github.com/ikigenba/agentkit, v0.20.0)
+## agentkit (github.com/ikigenba/agentkit, v0.22.0)
 
 The suite's multi-provider LLM client. The parts llm-lint uses:
 
@@ -56,7 +57,23 @@ The suite's multi-provider LLM client. The parts llm-lint uses:
   validation via `Check`. Entries carry context window, pricing, and the
   provider's env key. Both target models are curated:
   `gemini-3.7-flash` (Google, 1,048,576-token context) and `gpt-5.6-luna`
-  (OpenAI, 400,000-token context) — `catalog/data.go:122,178`.
+  (OpenAI, 400,000-token context) — `catalog/data.go:135,191`.
+- **v0.22.0 catalog additions**: three OpenRouter-served models, each a single
+  OpenRouter offering with a derived wire name, plus two additive `VendorID`
+  constants `VendorNVIDIA` (`"nvidia"`) and `VendorQwen` (`"qwen"`) that have
+  no native provider package (`catalog/data.go:5-8,261-272`). The models:
+  `nemotron-3.5-lightning` (NVIDIA, 1M context, thinking-toggle reasoning on by
+  default, enable and disable both accepted); `qwen3.8-max` (Qwen, 1M context,
+  effort-enum reasoning `low`/`medium`/`xhigh` default `xhigh`, reasoning
+  mandatory — cannot disable); `qwen3.8-27b` (Qwen, 256k context, same effort
+  enum and default, thinking disable-able). llm-lint needs no code for these:
+  they are pure catalog data that its catalog-driven config resolution and
+  `--help` enumeration already consume. A bare `model=<one of these>` derives
+  the `openrouter` provider (key auth, `OPENROUTER_API_KEY`) through the same
+  `catalog.Resolve` path every other curated model uses. (v0.21.0, between
+  v0.20.0 and v0.22.0, added `claude-opus-5` and is likewise pure catalog data;
+  both are minor version bumps whose only exported-API change is the two
+  additive vendor constants.)
 - **Raw exchange log**: setting `Conversation.Log` to an open file writes the
   complete raw exchange as JSONL. agent-repl writes
   `~/.agentkit/<session-id>.jsonl`, unbuffered, write-only ("forensic output —
@@ -113,7 +130,7 @@ The suite's multi-provider LLM client. The parts llm-lint uses:
 ## Options evaluated and not chosen
 
 - **Forced JSON / native structured-output modes**: not exposed by agentkit
-  v0.20.0; would mean bypassing the suite client. Rejected in favor of the
+  v0.22.0; would mean bypassing the suite client. Rejected in favor of the
   typed-tool idiom above.
 - **YAML library for rule frontmatter**: the needed subset (two scalars, two
   string lists) does not justify the dependency given the ralph precedent;
