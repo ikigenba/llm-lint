@@ -6,5 +6,3 @@ status markers. The build loop finds its next work with
 that phase's body file, deleting the line and the file on completion.
 
 Next phase: 31
-
-- Phase 30 ⬜ realizes R-TIL4-XZAL — blank-line section separators and defaults-as-header in --help
