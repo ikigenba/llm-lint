@@ -6,5 +6,3 @@ status markers. The build loop finds its next work with
 that phase's body file, deleting the line and the file on completion.
 
 Next phase: 32
-
-- Phase 31 ⬜ realizes — — bump the agentkit dependency to v0.22.0
