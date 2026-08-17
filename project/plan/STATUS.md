@@ -6,5 +6,3 @@ status markers. The build loop finds its next work with
 that phase's body file, deleting the line and the file on completion.
 
 Next phase: 30
-
-- Phase 29 ⬜ realizes R-4A0P-7AVY, R-4B8L-L2MN, R-4CGH-YUDC — render --help and bad-flag usage in agent-repl style
