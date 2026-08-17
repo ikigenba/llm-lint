@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.7.0
+
+- Updated the bundled agentkit client to v0.22.0, which adds four models to the
+  advisory catalog. Three are served through OpenRouter —
+  `nemotron-3.5-lightning` (NVIDIA), `qwen3.8-max`, and `qwen3.8-27b` (Qwen) —
+  and `claude-opus-5` is served natively by Anthropic with an OpenRouter
+  alternative. Each can now be selected with `-c model=<name>` (or a `model`
+  entry in `.llm-lint.json`) and appears in the `--help` model listings.
+
 ## v0.6.0
 
 - Redesigned the `--help` screen to follow agent-repl's layout: a `usage:`
