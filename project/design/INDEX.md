@@ -9,7 +9,7 @@ whenever a Decision is added or its Verification ids change.
 - D1 → `D01.md` — CLI surface and shallow composition root — R-FR4R-EO0B,
   R-FSCN-SFR0, R-FTKK-67HP, R-FUSG-JZ8E, R-FW0C-XQZ3, R-2J16-KM75,
   R-FX89-BIPS, R-FYG5-PAGH, R-J6TT-EEVY, R-H1KL-BCFY, R-H2SH-P46N,
-  R-WBQM-PELO
+  R-WBQM-PELO, R-4A0P-7AVY, R-4B8L-L2MN, R-4CGH-YUDC
 - D2 → `D02.md` — Configuration resolution — R-FZO2-3276, R-G0VY-GTXV,
   R-2K92-YDXU, R-G23U-ULOK, R-G3BR-8DF9, R-G5RJ-ZWWN, R-G6ZG-DONC,
   R-G87C-RGE1, R-G9F9-584Q, R-IVUP-YH7P, R-IX2M-C8YE, R-IYAI-Q0P3,
@@ -42,6 +42,9 @@ whenever a Decision is added or its Verification ids change.
 - R-2MOV-PXF8 — D3 (`D03.md`)
 - R-2NWS-3P5X — D3 (`D03.md`)
 - R-2P4O-HGWM — D3 (`D03.md`)
+- R-4A0P-7AVY — D1 (`D01.md`)
+- R-4B8L-L2MN — D1 (`D01.md`)
+- R-4CGH-YUDC — D1 (`D01.md`)
 - R-4HI3-PKJF — D3 (`D03.md`)
 - R-4IQ0-3CA4 — D12 (`D12.md`)
 - R-4JXW-H40T — D12 (`D12.md`)
