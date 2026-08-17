@@ -1,3 +1,6 @@
+> [!WARNING]
+> **This is unsupported AI slop!**
+
 # llm-lint
 
 `llm-lint` checks files with configurable LLM-backed lint rules.
