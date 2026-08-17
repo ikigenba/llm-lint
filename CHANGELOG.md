@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.6.0
+
+- Redesigned the `--help` screen to follow agent-repl's layout: a `usage:`
+  line, a `flags:` block listing each option with a short description, a
+  `defaults:` section showing the built-in default provider, model, and auth, an
+  aligned `providers:` block, and per-provider model listings whose reasoning
+  choices are shown in braces with the default marked by `*`, with the sections
+  separated by blank lines.
+- Changed the response to an unknown flag to print the flag error followed by a
+  single one-line usage summary, instead of printing the full usage block
+  twice.
+
 ## v0.5.0
 
 - Added a `boolean-state-machine` built-in rule that flags groups of two or
