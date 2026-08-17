@@ -51,6 +51,7 @@ func usage(w io.Writer) {
 
 func printHelp(w io.Writer) {
 	usage(w)
+	fmt.Fprintln(w)
 	fmt.Fprintln(w, "flags:")
 	flags := []struct {
 		short, long, argument, description string
@@ -69,7 +70,10 @@ func printHelp(w io.Writer) {
 	for _, flag := range flags {
 		fmt.Fprintf(w, "  %-3s %-15s %-12s %s\n", flag.short, flag.long, flag.argument, flag.description)
 	}
-	fmt.Fprintln(w, "defaults: provider=google   model=gemini-3.7-flash   auth=key")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "defaults:")
+	fmt.Fprintln(w, "  provider=google   model=gemini-3.7-flash   auth=key")
+	fmt.Fprintln(w)
 	fmt.Fprintln(w, "providers:")
 	providers := config.Providers()
 	providerWidth := 0
@@ -88,6 +92,7 @@ func printHelp(w io.Writer) {
 			fmt.Fprintf(w, "  %-*s  auth=sub  (auth_file=~/.llm-lint/%s-auth.json)\n", providerWidth, "", provider)
 		}
 	}
+	fmt.Fprintln(w)
 	for _, provider := range providers {
 		entries := catalog.ListCurated(provider)
 		modelWidth := 0
@@ -100,6 +105,7 @@ func printHelp(w io.Writer) {
 		for _, entry := range entries {
 			fmt.Fprintf(w, "  %-*s  %s\n", modelWidth, entry.Model, reasoningClause(entry, provider))
 		}
+		fmt.Fprintln(w)
 	}
 	fmt.Fprintln(w, "bare model= derives its provider and must name a catalogued model")
 	fmt.Fprintln(w, "explicit provider= accepts any model as pass-through")

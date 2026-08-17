@@ -10,7 +10,7 @@ import (
 
 // R-4B8L-L2MN
 func TestRunHelpPrintsCompiledDefaultsIndependentOfConfiguration(t *testing.T) {
-	const defaults = "defaults: provider=google   model=gemini-3.7-flash   auth=key"
+	const defaults = "defaults:\n  provider=google   model=gemini-3.7-flash   auth=key"
 	cwd := t.TempDir()
 	if err := os.WriteFile(filepath.Join(cwd, ".llm-lint.json"), []byte(`{"model":"gpt-5.4"}`), 0o600); err != nil {
 		t.Fatal(err)
@@ -22,6 +22,9 @@ func TestRunHelpPrintsCompiledDefaultsIndependentOfConfiguration(t *testing.T) {
 		}
 		if count := strings.Count(out.String(), defaults); count != 1 {
 			t.Errorf("run(%q) contains compiled defaults %d times; want once:\n%s", args, count, out.String())
+		}
+		if strings.Contains(out.String(), "defaults: provider=") {
+			t.Errorf("run(%q) renders defaults inline; want header and indented value:\n%s", args, out.String())
 		}
 	}
 }
