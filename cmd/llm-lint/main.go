@@ -46,25 +46,59 @@ var newClient = func(cfg *config.Config, errOut io.Writer) (engine.Client, error
 }
 
 func usage(w io.Writer) {
-	fmt.Fprintln(w, "Usage: llm-lint [options] [path...]")
-	fmt.Fprintln(w, "Options: -c key=value, --rules path, --format text|json, --concurrency N, --no-cache, --stats, --verbose, --list-rules, -V, --version, --help")
+	fmt.Fprintln(w, "usage: llm-lint [flags] [path ...]")
 }
 
 func printHelp(w io.Writer) {
 	usage(w)
+	fmt.Fprintln(w, "flags:")
+	flags := []struct {
+		short, long, argument, description string
+	}{
+		{"-c,", "", "key=value", "override a config setting (repeatable)"},
+		{"", "--rules", "path", "add a rule file or directory (repeatable)"},
+		{"", "--format", "text|json", "select the output format"},
+		{"", "--concurrency", "N", "set maximum in-flight calls"},
+		{"", "--no-cache", "", "skip cache reads"},
+		{"", "--stats", "", "print run statistics"},
+		{"", "--verbose", "", "print per-pair progress"},
+		{"", "--list-rules", "", "list known rules and exit"},
+		{"-V,", "--version", "", "print version and exit"},
+		{"", "--help", "", "print help and exit"},
+	}
+	for _, flag := range flags {
+		fmt.Fprintf(w, "  %-3s %-15s %-12s %s\n", flag.short, flag.long, flag.argument, flag.description)
+	}
+	fmt.Fprintln(w, "defaults: provider=google   model=gemini-3.7-flash   auth=key")
 	fmt.Fprintln(w, "providers:")
-	for _, provider := range config.Providers() {
+	providers := config.Providers()
+	providerWidth := 0
+	for _, provider := range providers {
+		if len(provider) > providerWidth {
+			providerWidth = len(provider)
+		}
+	}
+	for _, provider := range providers {
 		info, ok := config.ProviderInfo(provider)
 		if !ok {
 			continue
 		}
-		fmt.Fprintf(w, "  %s\n", provider)
-		fmt.Fprintf(w, "    auth=key (%s)\n", info.EnvKey)
+		fmt.Fprintf(w, "  %-*s  auth=key  (%s)\n", providerWidth, provider, info.EnvKey)
 		if supportsAuth(info.Methods, "sub") {
-			fmt.Fprintf(w, "    auth=sub (auth_file=~/.llm-lint/%s-auth.json)\n", provider)
+			fmt.Fprintf(w, "  %-*s  auth=sub  (auth_file=~/.llm-lint/%s-auth.json)\n", providerWidth, "", provider)
 		}
-		for _, entry := range catalog.ListCurated(provider) {
-			fmt.Fprintf(w, "    %s (%s)\n", entry.Model, reasoningClause(entry, provider))
+	}
+	for _, provider := range providers {
+		entries := catalog.ListCurated(provider)
+		modelWidth := 0
+		for _, entry := range entries {
+			if len(entry.Model) > modelWidth {
+				modelWidth = len(entry.Model)
+			}
+		}
+		fmt.Fprintln(w, provider)
+		for _, entry := range entries {
+			fmt.Fprintf(w, "  %-*s  %s\n", modelWidth, entry.Model, reasoningClause(entry, provider))
 		}
 	}
 	fmt.Fprintln(w, "bare model= derives its provider and must name a catalogued model")
@@ -86,7 +120,7 @@ func reasoningClause(entry catalog.Entry, provider agentkit.ProviderID) string {
 			continue
 		}
 		if offering.Reasoning == nil {
-			return "reasoning=none*"
+			return "—"
 		}
 		spec := offering.Reasoning
 		var choices []string
@@ -101,30 +135,25 @@ func reasoningClause(entry catalog.Entry, provider agentkit.ProviderID) string {
 			choices = append(choices, markReasoningDefault(level, isLevel && level == defaultLevel))
 		}
 		if spec.Min != 0 || spec.Max != 0 {
-			budget, isBudget := spec.Default.Value.Budget()
-			value := fmt.Sprintf("%d..%d", spec.Min, spec.Max)
-			if isBudget {
-				value += fmt.Sprintf(" (default %d*)", budget)
-			}
-			choices = append(choices, value)
+			choices = append(choices, fmt.Sprintf("%d–%d", spec.Min, spec.Max))
 		}
-		if len(choices) == 0 {
-			choices = append(choices, "provider-default*")
-		} else if !strings.Contains(strings.Join(choices, ""), "*") {
-			choices = append(choices, "provider-default*")
+		if spec.Default.Mode == catalog.DefaultDynamic || spec.Default.Value.IsUnset() {
+			choices = append(choices, "*dynamic")
 		}
 		term := spec.Term
 		if term == "" {
 			term = "reasoning"
 		}
-		return fmt.Sprintf("reasoning %s=%s", term, strings.Join(choices, "|"))
+		term = strings.ReplaceAll(term, "thinking level", "thinking_level")
+		term = strings.ReplaceAll(term, "thinking budget", "thinking_budget")
+		return fmt.Sprintf("%s={%s}", term, strings.Join(choices, "|"))
 	}
-	return "reasoning=none*"
+	return "—"
 }
 
 func markReasoningDefault(value string, isDefault bool) string {
 	if isDefault {
-		return value + "*"
+		return "*" + value
 	}
 	return value
 }
